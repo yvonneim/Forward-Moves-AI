@@ -1,7 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Job, InterviewPrep, CoverLetter } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
+const systemInstruction =  "You are an AI Governance expert helping people in Woodbridge with career moves.";
 
 export const generateInterviewPrep = async (job: Job): Promise<InterviewPrep> => {
   const response = await ai.models.generateContent({
