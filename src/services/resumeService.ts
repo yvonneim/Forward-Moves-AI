@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Job, ResumeMatch, RevisedResume } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 export const matchResumeToJob = async (resumeText: string, job: Job): Promise<ResumeMatch> => {
   const response = await ai.models.generateContent({
