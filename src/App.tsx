@@ -56,16 +56,16 @@ import {
 } from 'recharts';
 
 const LandingSection = () => (
-  <div className="glass-panel bg-slate-900 border-none shadow-2xl mb-12 overflow-hidden relative min-h-[500px] flex items-center rounded-[3rem]">
+  <div className="glass-panel bg-white border-none shadow-2xl mb-12 overflow-hidden relative min-h-[500px] flex items-center rounded-[3rem]">
     <div className="absolute top-0 right-0 w-full h-full">
       <img 
-        src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072" 
-        alt="AI Career Frontier" 
-        className="w-full h-full object-cover opacity-40 scale-105"
+        src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2070" 
+        alt="Happy Career Success" 
+        className="w-full h-full object-cover opacity-20 scale-105"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.2),transparent_50%)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
     </div>
     
     <div className="relative z-10 p-16 max-w-4xl">
@@ -75,23 +75,23 @@ const LandingSection = () => (
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <div className="flex items-center gap-3 mb-8">
-          <span className="inline-block px-4 py-1.5 bg-fm-blue/20 text-blue-300 text-[10px] font-bold uppercase tracking-[0.4em] rounded-full border border-white/10 backdrop-blur-md">
-            The AI Frontier
+          <span className="inline-block px-4 py-1.5 bg-fm-blue/10 text-fm-blue text-[10px] font-bold uppercase tracking-[0.4em] rounded-full border border-fm-blue/10 backdrop-blur-md">
+            Your Bright Future
           </span>
-          <div className="h-px w-12 bg-white/20" />
+          <div className="h-px w-12 bg-fm-blue/20" />
         </div>
         
-        <h2 className="text-7xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight">
-          Cross the Bridge to <br />
+        <h2 className="text-7xl font-serif font-bold text-slate-900 mb-8 leading-[1.1] tracking-tight">
+          Step Into Your <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-fm-blue via-fm-violet to-fm-blue bg-[length:200%_auto] animate-gradient italic">
-            Your AI Future.
+            Next Great Chapter.
           </span>
         </h2>
         
-        <p className="text-xl text-slate-300 mb-10 leading-relaxed max-w-2xl font-light">
-          USA Job Scout is your futuristic glass bridge. We connect your traditional expertise 
-          to the vibrant digital cityscape of the AI career frontier. 
-          Master the skills that define the next decade.
+        <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl font-light">
+          USA Job Scout is your bridge to a more fulfilling career. We connect your unique 
+          talents to the most exciting opportunities in the AI-driven workforce. 
+          Let's build your success story together.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -100,14 +100,14 @@ const LandingSection = () => (
               const el = document.getElementById('resume-upload-section');
               el?.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="w-full sm:w-auto px-10 py-5 bg-white text-fm-deep rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-2xl shadow-white/10 flex items-center justify-center gap-3"
+            className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-2xl shadow-slate-900/10 flex items-center justify-center gap-3"
           >
             Start Your Journey
             <ArrowRight size={20} />
           </button>
-          <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">500+ Scouts Active Now</p>
+          <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 rounded-2xl border border-slate-200">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">500+ Scouts Active Now</p>
           </div>
         </div>
       </motion.div>
@@ -177,16 +177,6 @@ const QuickStartGuide = ({ onStart, onSetTab }: { onStart: () => void; onSetTab:
           border: "border-blue-100",
           action: "Go to Labs",
           onClick: () => onSetTab('labs')
-        },
-        {
-          step: "Step 5",
-          title: "Pitch & Apply",
-          desc: "Use the 'Interview Tips' and 'Letter' tools on any job card to master your professional narrative.",
-          icon: <Award className="text-fm-orange" size={24} />,
-          bg: "bg-orange-50",
-          border: "border-orange-100",
-          action: "Go to Pitch",
-          onClick: () => onSetTab('discover')
         }
       ].map((item, i) => (
         <div key={i} className={`glass-panel p-8 ${item.bg} ${item.border} relative group hover:shadow-xl transition-all h-full flex flex-col`}>
@@ -1390,9 +1380,15 @@ const ResourceHubView = () => {
   const [activeCategory, setActiveCategory] = useState('All');
 
   const filteredModules = useMemo(() => {
-    if (activePortal === 'All') return LEARNING_MODULES;
-    return LEARNING_MODULES.filter(m => m.p === activePortal);
-  }, [activePortal]);
+    let modules = LEARNING_MODULES;
+    if (activePortal !== 'All') {
+      modules = modules.filter(m => m.p === activePortal);
+    }
+    if (activeCategory !== 'All') {
+      modules = modules.filter(m => (m as any).c === activeCategory);
+    }
+    return modules;
+  }, [activePortal, activeCategory]);
 
   const filteredPaths = useMemo(() => {
     if (activeCategory === 'All') return PATHS_DATA;
