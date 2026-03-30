@@ -42,7 +42,9 @@ import {
   MessageSquare,
   PenTool,
   Copy,
-  Check
+  Check,
+  Send,
+  Mail
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -56,151 +58,100 @@ import {
 } from 'recharts';
 
 const LandingSection = () => (
-  <div className="glass-panel bg-white border-none shadow-2xl mb-12 overflow-hidden relative min-h-[500px] flex items-center rounded-[3rem]">
-    <div className="absolute top-0 right-0 w-full h-full">
+  <div className="relative min-h-[450px] flex items-center justify-center rounded-[3rem] overflow-hidden mb-12 bg-white">
+    <div className="absolute inset-0">
       <img 
         src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2070" 
         alt="Happy Career Success" 
-        className="w-full h-full object-cover opacity-20 scale-105"
+        className="w-full h-full object-cover opacity-[0.08] scale-105"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05),transparent_70%)]" />
     </div>
     
-    <div className="relative z-10 p-16 max-w-4xl">
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <div className="flex items-center gap-3 mb-8">
-          <span className="inline-block px-4 py-1.5 bg-fm-blue/10 text-fm-blue text-[10px] font-bold uppercase tracking-[0.4em] rounded-full border border-fm-blue/10 backdrop-blur-md">
-            Your Bright Future
-          </span>
-          <div className="h-px w-12 bg-fm-blue/20" />
-        </div>
-        
-        <h2 className="text-7xl font-serif font-bold text-slate-900 mb-8 leading-[1.1] tracking-tight">
-          Step Into Your <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-fm-blue via-fm-violet to-fm-blue bg-[length:200%_auto] animate-gradient italic">
-            Next Great Chapter.
-          </span>
-        </h2>
-        
-        <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl font-light">
-          USA Job Scout is your bridge to a more fulfilling career. We connect your unique 
-          talents to the most exciting opportunities in the AI-driven workforce. 
-          Let's build your success story together.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <button 
-            onClick={() => {
-              const el = document.getElementById('resume-upload-section');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-2xl shadow-slate-900/10 flex items-center justify-center gap-3"
-          >
-            Start Your Journey
-            <ArrowRight size={20} />
-          </button>
-          <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 rounded-2xl border border-slate-200">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">500+ Scouts Active Now</p>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-
-    {/* Decorative Elements */}
-    <div className="absolute bottom-0 right-0 p-12 hidden lg:block">
-      <div className="flex flex-col items-end gap-2">
-        <div className="w-32 h-1 bg-gradient-to-l from-fm-blue to-transparent rounded-full opacity-50" />
-        <div className="w-48 h-1 bg-gradient-to-l from-fm-violet to-transparent rounded-full opacity-30" />
-        <div className="w-24 h-1 bg-gradient-to-l from-fm-blue to-transparent rounded-full opacity-20" />
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+      className="relative z-10 p-8 md:p-12 max-w-5xl text-center"
+    >
+      <div className="flex flex-col items-center gap-4 mb-8">
+        <span className="inline-block px-5 py-1.5 bg-slate-50 text-slate-400 text-[9px] font-bold uppercase tracking-[0.5em] rounded-full border border-slate-100">
+          Forward Moves USA
+        </span>
       </div>
-    </div>
+      
+      <h2 className="text-5xl md:text-7xl font-bold text-slate-900 mb-8 leading-[0.9] tracking-tighter">
+        Step Into Your <br />
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fm-blue to-fm-violet">
+          AI-Driven Future.
+        </span>
+      </h2>
+      
+      <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+        Your bridge to a more fulfilling career. We connect your unique 
+        talents to the most exciting opportunities in the AI-driven workforce.
+      </p>
+    </motion.div>
   </div>
 );
 
-const QuickStartGuide = ({ onStart, onSetTab }: { onStart: () => void; onSetTab: (tab: 'start' | 'discover' | 'labs' | 'insights') => void }) => (
+const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void; onSetTab: (tab: 'start' | 'discover' | 'labs' | 'insights' | 'reskilling') => void; onSetView: (view: any) => void }) => (
   <div className="mb-20">
-    <div className="flex items-center gap-4 mb-10">
-      <div className="w-14 h-14 bg-fm-blue rounded-2xl flex items-center justify-center text-white shadow-xl shadow-fm-blue/20">
-        <Compass size={28} />
+    <div className="flex flex-col items-center text-center mb-16">
+      <div className="w-20 h-20 bg-fm-blue rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-fm-blue/10 mb-8">
+        <Compass size={32} />
       </div>
-      <div>
-        <h2 className="text-4xl font-serif font-bold text-slate-900">Your Roadmap to Success</h2>
-        <p className="text-slate-500 text-lg">Follow these steps to navigate your AI career transition with confidence.</p>
-      </div>
+      <h2 className="text-5xl font-bold text-slate-900 tracking-tighter mb-4">Explore What's Inside</h2>
+      <p className="text-slate-400 text-xl max-w-2xl font-light leading-relaxed">Your gateway to the AI-driven workforce. Select a path to begin your journey.</p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
       {[
         {
-          step: "Step 1",
-          title: "Start Here: Prepare",
-          desc: "Prepare your resume text. **Privacy Tip:** Remove personal info like phone numbers or exact addresses before uploading.",
-          icon: <FileText className="text-blue-600" size={24} />,
-          bg: "bg-blue-50",
-          border: "border-blue-100",
-          action: "Go to Step 1",
-          onClick: onStart
+          title: "Reskilling Portal",
+          desc: "Access curated learning modules and technical reskilling programs to master AI skills.",
+          icon: <BookOpen className="text-slate-900" size={28} />,
+          onClick: () => onSetTab('reskilling'),
+          color: "bg-fm-violet/5"
         },
         {
-          step: "Step 2",
-          title: "Search & Discover",
-          desc: "Use the search bar below to find AI-related roles. **Pro Tip:** Click the grid icon on any job to add it to your comparison list.",
-          icon: <Search className="text-fm-violet" size={24} />,
-          bg: "bg-violet-50",
-          border: "border-violet-100",
-          action: "Go to Search",
-          onClick: () => onSetTab('discover')
+          title: "Career Discovery",
+          desc: "Find AI-related roles and mission-driven companies looking for your unique talents.",
+          icon: <Search className="text-slate-900" size={28} />,
+          onClick: () => onSetTab('discover'),
+          color: "bg-fm-blue/5"
         },
         {
-          step: "Step 3",
-          title: "Analyze & Match",
-          desc: "Click 'Match' or 'SWOT' on any job in the Discover tab to see your compatibility and get a detailed SWOT analysis.",
-          icon: <Zap className="text-fm-blue" size={24} />,
-          bg: "bg-blue-50",
-          border: "border-blue-100",
-          action: "Go to Analyze",
-          onClick: () => onSetTab('discover')
-        },
-        {
-          step: "Step 4",
-          title: "Interactive AI Labs",
-          desc: "Head to the 'Labs' tab to access specialized tools like the Resume Reviser, Interview Prep, and SWOT Analysis.",
-          icon: <FlaskConical className="text-fm-blue" size={24} />,
-          bg: "bg-blue-50",
-          border: "border-blue-100",
-          action: "Go to Labs",
-          onClick: () => onSetTab('labs')
+          title: "Resume Prep",
+          desc: "Prepare your profile for the AI frontier. Get matched with roles that fit your skills.",
+          icon: <FileText className="text-slate-900" size={28} />,
+          onClick: onStart,
+          color: "bg-fm-orange/5"
         }
-      ].map((item, i) => (
-        <div key={i} className={`glass-panel p-8 ${item.bg} ${item.border} relative group hover:shadow-xl transition-all h-full flex flex-col`}>
-          <div className="flex justify-between items-start mb-6">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-              {item.icon}
-            </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{item.step}</span>
+      ].map((item, idx) => (
+        <motion.div 
+          key={idx}
+          whileHover={{ y: -10 }}
+          className={`group relative ${item.color} p-12 rounded-[3.5rem] border border-slate-50 shadow-sm hover:shadow-2xl hover:shadow-fm-blue/5 hover:bg-blue-50 hover:border-blue-100 transition-all duration-500 cursor-pointer text-center flex flex-col items-center`}
+          onClick={item.onClick}
+        >
+          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 group-hover:bg-fm-blue group-hover:text-white transition-all duration-500 shadow-sm">
+            {item.icon}
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-4">{item.title}</h3>
-          <div className="text-sm text-slate-600 leading-relaxed flex-1">
-            <Markdown>{item.desc}</Markdown>
+          <h3 className="text-2xl font-bold text-slate-900 mb-4">{item.title}</h3>
+          <p className="text-slate-500 leading-relaxed">{item.desc}</p>
+          
+          <div className="mt-8 flex items-center gap-2 text-fm-violet font-bold text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+            Enter Portal <ArrowRight size={14} />
           </div>
-          <button 
-            onClick={item.onClick}
-            className="mt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-fm-blue hover:text-blue-700 transition-colors"
-          >
-            {item.action} <ArrowRight size={12} />
-          </button>
-        </div>
+        </motion.div>
       ))}
     </div>
   </div>
 );
+
+
 
 const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; currentResume: string }) => {
   const [text, setText] = useState(currentResume);
@@ -280,7 +231,7 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
                     onChange={(e) => setAgreedToPrivacy(e.target.checked)}
                     className="w-5 h-5 rounded border-slate-300 text-fm-blue focus:ring-fm-blue transition-all"
                   />
-                  <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">
+                  <span className="text-sm font-medium text-slate-600 group-hover:text-fm-blue transition-colors">
                     I have anonymized my resume text
                   </span>
                 </label>
@@ -323,7 +274,7 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
               {currentResume && (
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-lg hover:bg-slate-200 transition-all"
+                  className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:text-fm-blue transition-all"
                 >
                   Cancel
                 </button>
@@ -459,7 +410,7 @@ const SkillGapAnalyzer = ({ resumeText, jobs }: { resumeText: string; jobs: Job[
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
                 else window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="px-8 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-fm-blue hover:bg-slate-50 transition-all shadow-sm"
+              className="px-8 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-fm-blue hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm"
             >
               {resumeText ? 'Update Resume' : 'Upload Resume to Compare'}
             </button>
@@ -521,7 +472,7 @@ const MarketTrendTracker = ({ jobs }: { jobs: Job[] }) => {
         </div>
       </div>
 
-      <div className="glass-panel p-8 bg-fm-deep text-white border-none shadow-xl flex flex-col justify-between">
+      <div className="glass-panel p-8 bg-fm-blue text-white border-none shadow-xl flex flex-col justify-between">
         <div>
           <h3 className="text-xl font-serif font-bold mb-4">Market Velocity</h3>
           <p className="text-blue-200 text-sm leading-relaxed mb-8">
@@ -806,7 +757,7 @@ const JobCard = ({
   onLetter: (job: Job) => void;
   onPrep: (job: Job) => void;
 }) => (
-  <div className="glass-panel p-8 hover:shadow-xl transition-all border-slate-200 group relative overflow-hidden flex flex-col h-full bg-white shadow-sm">
+  <div className="glass-panel p-8 hover:bg-blue-50 hover:shadow-xl hover:border-blue-100 transition-all border-slate-200 group relative overflow-hidden flex flex-col h-full bg-white shadow-sm">
     <div className="absolute top-0 right-0 w-32 h-32 bg-fm-blue/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform" />
     
     <div className="relative z-10 flex flex-col h-full">
@@ -921,10 +872,10 @@ const InterviewPrepView = ({ job, onBack }: { job: Job; onBack: () => void }) =>
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-500 hover:text-fm-blue mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
       >
-        <ArrowLeft size={20} />
-        Back to Dashboard
+        <ArrowLeft size={16} />
+        Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
@@ -1049,10 +1000,10 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-500 hover:text-fm-blue mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
       >
-        <ArrowLeft size={20} />
-        Back to Dashboard
+        <ArrowLeft size={16} />
+        Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
@@ -1173,10 +1124,10 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-500 hover:text-fm-blue mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
       >
-        <ArrowLeft size={20} />
-        Back to Dashboard
+        <ArrowLeft size={16} />
+        Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
@@ -1330,6 +1281,8 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
 };
 
 const PORTALS = [
+  { id: 'Google', n: 'Google', u: 'https://www.coursera.org/google', d: 'Take the next step in your learning journey. Each course in this learning program is designed to fit your unique career goals. Enroll in another course to continue building functional, job-ready solutions you can use right away.', icon: '📘', bg: 'bg-blue-50/60', border: 'border-blue-100' },
+  { id: 'NotebookLM', n: 'NotebookLM', u: 'https://notebooklm.google.com/', d: 'Use AI as your research partner to gain insights, generate summaries, and pressure test ideas.', icon: '📓', bg: 'bg-indigo-50/60', border: 'border-indigo-100' },
   { id: 'Anthropic', n: 'Anthropic', u: 'https://anthropic.skilljar.com/', d: 'Anthropic provides direct access to frontier-model research and AI development resources.', icon: '⚡', bg: 'bg-violet-50/60', border: 'border-violet-100' },
   { id: 'edX', n: 'edX', u: 'https://authn.edx.org/login?next=https%3A%2F%2Flearning.edx.org%2Fcourse%2Fcourse-v1%3AAI%2Bllmops3x%2B1T2024%2Fhome', d: 'edX is a global learning platform offering courses from world-class universities and industry leaders.', icon: '🧠', bg: 'bg-emerald-50/60', border: 'border-emerald-100' },
   { id: 'LHH', n: 'LHH', u: 'https://www.lhh.com/en-us', d: 'LHH brings together global excellence, local knowledge, and decades of experience to support companies and professionals across the talent lifecycle.', icon: '💼', bg: 'bg-blue-50/60', border: 'border-blue-100' },
@@ -1342,20 +1295,134 @@ const PORTALS = [
 ];
 
 const LEARNING_MODULES = [
+  // Anthropic
   { p: 'Anthropic', e: '⚡', n: 'Claude Code In Action', d: 'AI-assisted coding workflows and real-world application patterns.', u: 'https://anthropic.skilljar.com/claude-code-in-action' },
   { p: 'Anthropic', e: '🌱', n: 'Claude 101', d: 'Core interaction patterns with the Claude model family.', u: 'https://anthropic.skilljar.com/claude-101' },
   { p: 'Anthropic', e: '🧠', n: 'AI Fluency: Foundations', d: 'Core AI terminology, mental models, and key concepts.', u: 'https://anthropic.skilljar.com/ai-fluency-framework-foundations' },
+  { p: 'Anthropic', e: '🎓', n: 'Teaching AI Fluency', d: 'Strategies for instructing others in AI concepts and practices.', u: 'https://anthropic.skilljar.com/teaching-ai-fluency' },
+  { p: 'Anthropic', e: '📚', n: 'AI Fluency For Educators', d: 'AI methodology tailored to academic and educational settings.', u: 'https://anthropic.skilljar.com/ai-fluency-for-educators' },
+  { p: 'Anthropic', e: '🎒', n: 'AI Fluency For Students', d: 'Leveraging AI tools effectively for learning and research.', u: 'https://anthropic.skilljar.com/ai-fluency-for-students' },
+  { p: 'Anthropic', e: '🤝', n: 'AI Fluency For Nonprofits', d: 'Creating social impact through thoughtful AI integration.', u: 'https://anthropic.skilljar.com/ai-fluency-for-nonprofits' },
+  { p: 'Anthropic', e: '🛠️', n: 'Claude API', d: 'Full API implementation guide for production deployments.', u: 'https://anthropic.skilljar.com/claude-with-the-anthropic-api' },
+  { p: 'Anthropic', e: '🔗', n: 'Intro to Model Context Protocol', d: 'Standard protocol for structured data integration and exchange.', u: 'https://anthropic.skilljar.com/introduction-to-model-context-protocol' },
+  { p: 'Anthropic', e: '🚀', n: 'MCP: Advanced Topics', d: 'Deep-dive into Model Context Protocol architecture and patterns.', u: 'https://anthropic.skilljar.com/model-context-protocol-advanced-topics' },
+  { p: 'Anthropic', e: '☁️', n: 'Claude with Amazon Bedrock', d: 'Deploying Claude within Amazon cloud infrastructure at scale.', u: 'https://anthropic.skilljar.com/claude-in-amazon-bedrock' },
+  { p: 'Anthropic', e: '🌐', n: 'Claude with Vertex AI', d: 'Integrating Claude into Google Cloud platform environments.', u: 'https://anthropic.skilljar.com/claude-with-google-vertex' },
+  { p: 'Anthropic', e: '🤖', n: 'Intro to Agent Skills', d: 'Foundations for building autonomous AI agents and pipelines.', u: 'https://anthropic.skilljar.com/introduction-to-agent-skills' },
+  // Microsoft
   { p: 'Microsoft', e: '💡', n: 'Episode 1: Intro to Gen AI', d: 'Introduction to Generative AI and Large Language Models.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/introduction-to-generative-ai-and-llms-generative-ai-for-beginners' },
+  { p: 'Microsoft', e: '🔭', n: 'Episode 2: Exploring LLMs', d: 'Comparing and evaluating different LLM architectures.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/exploring-and-comparing-different-llms-generative-ai-for-beginners' },
+  { p: 'Microsoft', e: '⚖️', n: 'Episode 3: Responsible AI', d: 'Frameworks for using Generative AI responsibly and safely.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/using-generative-ai-responsibly-generative-ai-for-beginners' },
   { p: 'Microsoft', e: '⌨️', n: 'Episode 4: Prompt Engineering', d: 'Fundamentals of prompt engineering and instruction design.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/understanding-prompt-engineering-fundamentals-generative-ai-for-beginners' },
+  { p: 'Microsoft', e: '🚀', n: 'Episode 5: Advanced Prompts', d: 'Advanced prompting techniques for precise AI control.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/creating-advanced-prompts-generative-ai-for-beginners' },
+  { p: 'Microsoft', e: '📝', n: 'Episode 6: Text Generation', d: 'Building text-generation applications with generative models.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/building-text-generation-applications-generative-ai-for-beginners' },
+  { p: 'Microsoft', e: '💬', n: 'Episode 7: Chat Apps', d: 'Building LLM-powered chat applications from scratch.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/building-chat-applications-generative-ai-for-beginners' },
+  // Pega
+  { p: 'Pega', e: '🏛️', n: 'Pega Academy', d: 'Enterprise automation and workflow optimization training hub.', u: 'https://academy.pega.com/' },
+  { p: 'Pega', e: '🤖', n: 'Pega Process AI Essentials', d: 'AI-powered process automation and decisioning fundamentals.', u: 'https://academy.pega.com/mission/pega-process-ai-essentials/v7' },
+  // SAFe
+  { p: 'SAFe', e: '🛡️', n: 'SAFe Login Portal', d: 'Access the Scaled Agile Framework training and certification platform.', u: 'https://connect.scaledagile.com/login' },
   { p: 'Verizon', e: '📡', n: 'Verizon Reskilling Program', d: 'Technical reskilling programs focused on workforce readiness and digital prosperity.', u: 'https://www.verizon.com/about/responsibility/human-prosperity/reskilling-program' },
+  { p: 'Verizon', e: '🎓', n: 'Udemy — AI Leader Cert', d: 'Generative AI leadership strategy and certification, via Verizon Udemy access.', u: 'https://verizonreskilling.udemy.com/course/ai-leader-the-ultimate-generative-ai-leader-cert-training/' },
+  { p: 'Verizon', e: '🌟', n: 'edX — Skill Forward', d: 'Exclusive career reskilling pathways curated for Verizon alumni.', u: 'https://enterprise.edx.org/verizon-skill-forward/search' },
+  { p: 'LinkedIn', e: '🔗', n: 'LinkedIn Learning Portal', d: 'Access the full LinkedIn Learning library — courses, paths, and certificates.', u: 'https://www.linkedin.com/learning-login/continue?account=67698794&forceAccount=false&authUUID=q95hhwNFS%2BWFOWMQt%2BnDKg%3D%3D&redirect=https%3A%2F%2Fwww.linkedin.com%2Flearning%2F%3Fu%3D67698794' },
+  { p: 'LinkedIn', e: '🎯', n: 'AI & Machine Learning Paths', d: 'Curated LinkedIn Learning paths for AI fluency and machine learning skills.', u: 'https://www.linkedin.com/learning-login/continue?account=67698794&forceAccount=false&authUUID=q95hhwNFS%2BWFOWMQt%2BnDKg%3D%3D&redirect=https%3A%2F%2Fwww.linkedin.com%2Flearning%2F%3Fu%3D67698794' },
+  { p: 'LinkedIn', e: '💼', n: 'Career Development Courses', d: 'Professional growth, leadership, and career transition courses on LinkedIn.', u: 'https://www.linkedin.com/learning-login/continue?account=67698794&forceAccount=false&authUUID=q95hhwNFS%2BWFOWMQt%2BnDKg%3D%3D&redirect=https%3A%2F%2Fwww.linkedin.com%2Flearning%2F%3Fu%3D67698794' },
+  { p: 'edX', e: '🧠', n: 'LLM Ops', d: 'Large Language Model operations, monitoring, and management.', u: 'https://learning.edx.org/course/course-v1:AI+llmops3x+1T2024/home' },
+  { p: 'edX', e: '🌟', n: 'Skill Forward', d: 'Exclusive career reskilling pathways curated for alumni.', u: 'https://enterprise.edx.org/verizon-skill-forward/search' },
+  // Udemy
   { p: 'Udemy', e: '🎓', n: 'AI Leader Cert', d: 'Generative AI leadership strategy and certification program.', u: 'https://verizonreskilling.udemy.com/course/ai-leader-the-ultimate-generative-ai-leader-cert-training/' },
+  { p: 'Udemy', e: '🛡️', n: 'AI Auditing', d: 'Governance frameworks and accountability practices for AI systems.', u: 'https://verizonreskilling.udemy.com/course/ai-audit-certification-mastercalss/' },
+  { p: 'Udemy', e: '🔐', n: 'AI Governance', d: 'Risk management and compliance for LLM deployments.', u: 'https://verizonreskilling.udemy.com/course/ai-governance-professional-aigp-2025/' },
+  { p: 'Udemy', e: '📈', n: 'AI Mock Exam', d: 'Practice exams for AI certification preparation.', u: 'https://verizonreskilling.udemy.com/course/google-cloud-generative-ai-leader-3-mock-generative-ai-leader-exams/' },
+  // LHH
+  { p: 'LHH', e: '💼', n: 'Career Transition', d: 'Lee Hecht Harrison professional coaching and support services.', u: 'https://www.lhh.com/en-us' },
+  { p: 'LHH', e: '📝', n: 'Presence Guide', d: 'Optimizing your digital profile for the modern hiring process.', u: 'https://www.lhh.com/en-us/individuals/' },
+  // Google & NotebookLM
+  { p: 'Google', e: '🧠', n: 'AI for Brainstorming and Planning', d: 'Use AI to brainstorm concepts, build detailed timelines, and organize a clear plan for any goal. (Recommended)', u: 'https://www.coursera.org/learn/google-ai-for-brainstorming-and-planning' },
+  { p: 'NotebookLM', e: '📓', n: 'NotebookLM', d: 'Use AI as your research partner to gain insights, generate summaries, and pressure test ideas.', u: 'https://notebooklm.google.com/' },
+  { p: 'NotebookLM', e: '🎙️', n: 'NotebookLM: Audio Overview', d: 'Listen to an AI-generated deep dive into career transition strategies.', u: 'https://notebooklm.google.com/notebook/b02cfeb6-d2bc-4ec8-94e3-5c8f9f5ec40b?artifactId=14120553-0dc1-4f84-b985-ac28f4a8e14a' },
+  { p: 'Google', e: '✨', n: 'AI Fundamentals', d: 'Learn essential AI concepts and practice prompting effectively.', u: 'https://www.coursera.org/learn/google-ai-fundamentals' },
+  { p: 'Google', e: '🔍', n: 'AI for Research and Insights', d: 'Use AI as your research partner, leveraging Deep Research and NotebookLM to gain insights, generate summaries, and pressure test ideas for informed decision-making.', u: 'https://www.coursera.org/learn/google-ai-for-writing-and-communicating' },
+  { p: 'Google', e: '✍️', n: 'AI for Writing and Communicating', d: 'Turn rough notes into clear messages, easily adapt them for different stakeholders, and practice for presentations by anticipating questions and concerns.', u: 'https://www.coursera.org/learn/google-ai-for-writing-and-communicating' },
+  { p: 'Google', e: '🎨', n: 'AI for Content Creation', d: 'Use AI as your creative partner to generate high-quality images, video, and presentations.', u: 'https://www.coursera.org/learn/google-ai-for-content-creation' },
+  { p: 'Google', e: '📊', n: 'AI for Data Analysis', d: 'Transform unstructured data into clear insights, master skills to analyze data, and create compelling visualizations and formulas with Gemini in Google Sheets.', u: 'https://www.coursera.org/learn/google-ai-for-data-analysis' },
+  { p: 'Google', e: '🛠️', n: 'AI for App Building', d: 'Master vibe coding and build your own custom app. Tackle the most tedious tasks, all without writing a single line of code.', u: 'https://www.coursera.org/learn/google-ai-for-app-building' },
 ];
 
 const PATHS_DATA = [
+  // Health
   { n: 'Aledade', c: 'Health', d: 'Technology for independent primary care.', u: 'https://www.aledade.com/careers', e: '🏥' },
+  { n: 'Alma', c: 'Health', d: 'High-quality mental healthcare platform.', u: 'https://helloalma.com/careers/', e: '🏥' },
+  { n: 'Brightline', c: 'Health', d: 'Behavioral health for children and families.', u: 'https://www.hellobrightline.com/careers', e: '🏥' },
+  { n: 'Cityblock Health', c: 'Health', d: 'Healthcare for underserved communities.', u: 'https://www.cityblock.com/careers', e: '🏥' },
+  { n: 'Color Health', c: 'Health', d: 'Infrastructure for public health at scale.', u: 'https://www.color.com/careers', e: '🏥' },
+  { n: 'Formation Bio', c: 'Health', d: 'AI-driven drug development platform.', u: 'https://formationbio.com/careers', e: '🏥' },
+  { n: 'Grow Therapy', c: 'Health', d: 'Platform for mental health practices.', u: 'https://growtherapy.com/careers', e: '🏥' },
+  { n: 'Headway', c: 'Health', d: 'Mental healthcare access infrastructure.', u: 'https://headway.co/careers', e: '🏥' },
+  { n: 'Hinge Health', c: 'Health', d: 'Digital clinic for joint and muscle pain.', u: 'https://www.hingehealth.com/careers/', e: '🏥' },
+  { n: 'Hippocratic AI', c: 'Health', d: 'Safety-focused LLMs for healthcare.', u: 'https://www.hippocraticai.com/careers', e: '🏥' },
+  { n: 'Honor', c: 'Health', d: 'Empowering home care agencies and workers.', u: 'https://www.joinhonor.com/careers', e: '🏥' },
+  { n: 'Included Health', c: 'Health', d: 'Healthcare navigation and clinical care.', u: 'https://includedhealth.com/careers/', e: '🏥' },
+  { n: 'Lyra Health', c: 'Health', d: 'Mental health benefit transformation.', u: 'https://www.lyrahealth.com/careers/', e: '🏥' },
+  { n: 'Maven Clinic', c: 'Health', d: 'Virtual clinic for women and families.', u: 'https://www.mavenclinic.com/careers', e: '🏥' },
+  { n: 'Omada Health', c: 'Health', d: 'Virtual care for chronic conditions.', u: 'https://www.omadahealth.com/careers', e: '🏥' },
+  { n: 'Pair Team', c: 'Health', d: 'Connecting clinics to digital care networks.', u: 'https://www.pairteam.com/careers', e: '🏥' },
+  { n: 'Papa', c: 'Health', d: 'Companionship for seniors and families.', u: 'https://www.papa.com/careers', e: '🏥' },
+  { n: 'Pearl Health', c: 'Health', d: 'Primary care value-based technology.', u: 'https://pearlhealth.com/careers/', e: '🏥' },
+  { n: 'Pomelo Care', c: 'Health', d: 'Virtual maternity and neonatal care.', u: 'https://www.pomelocare.com/careers', e: '🏥' },
+  { n: 'Ro', c: 'Health', d: 'Direct-to-patient telehealth company.', u: 'https://ro.co/careers/', e: '🏥' },
+  { n: 'Spring Health', c: 'Health', d: 'Mental health benefits for employers.', u: 'https://www.springhealth.com/careers/', e: '🏥' },
+  { n: 'Sword Health', c: 'Health', d: 'AI-powered physical therapy.', u: 'https://swordhealth.com/careers', e: '🏥' },
+  { n: 'Virta Health', c: 'Health', d: 'Type 2 diabetes reversal through care.', u: 'https://www.virtahealth.com/careers', e: '🏥' },
+  { n: 'Waymark', c: 'Health', d: 'Community care for Medicaid members.', u: 'https://www.waymark.com/careers', e: '🏥' },
+  // Climate
   { n: 'Arcadia Power', c: 'Climate', d: 'Clean energy utility platform.', u: 'https://www.arcadia.com/careers', e: '🌍' },
+  { n: 'Charm Industrial', c: 'Climate', d: 'Carbon removal via bio-oil sequestration.', u: 'https://charmindustrial.com/careers', e: '🌍' },
+  { n: 'Climeworks', c: 'Climate', d: 'Direct air capture of CO₂ at industrial scale.', u: 'https://www.climeworks.com/careers', e: '🌍' },
+  { n: 'Commonwealth Fusion', c: 'Climate', d: 'Compact fusion energy for a clean grid.', u: 'https://cfs.energy/careers', e: '🌍' },
+  { n: 'Crusoe Energy', c: 'Climate', d: 'Stranded energy solutions for compute and climate.', u: 'https://www.crusoeenergy.com/careers', e: '🌍' },
+  { n: 'Ecovative', c: 'Climate', d: 'Mycelium-based materials replacing plastics.', u: 'https://www.ecovative.com/pages/careers', e: '🌍' },
+  { n: 'Electra', c: 'Climate', d: 'Green iron production via electrochemistry.', u: 'https://electra.earth/careers', e: '🌍' },
+  { n: 'Moment Energy', c: 'Climate', d: 'Second-life EV batteries for energy storage.', u: 'https://www.momentenergy.com/careers', e: '🌍' },
+  { n: 'Natel Energy', c: 'Climate', d: 'Run-of-river hydropower restoring fish habitat.', u: 'https://www.natelenergy.com/careers', e: '🌍' },
+  { n: 'Redwood Materials', c: 'Climate', d: 'Battery recycling and supply chain.', u: 'https://www.redwoodmaterials.com/careers/', e: '🌍' },
+  { n: 'Rho Motion', c: 'Climate', d: 'EV and battery market intelligence.', u: 'https://rhomotion.com/careers', e: '🌍' },
+  { n: 'Twelve', c: 'Climate', d: 'CO₂-to-product conversion technology.', u: 'https://www.twelve.co/careers', e: '🌍' },
+  { n: 'Turntide Technologies', c: 'Climate', d: 'Smart motor systems cutting industrial energy use.', u: 'https://turntide.com/careers/', e: '🌍' },
+  { n: 'Watershed', c: 'Climate', d: 'Enterprise carbon management platform.', u: 'https://watershed.com/careers', e: '🌍' },
+  // Education
+  { n: 'Age of Learning', c: 'Education', d: 'Digital curriculum for PreK–5 learners.', u: 'https://www.ageoflearning.com/careers/', e: '📚' },
+  { n: 'Chegg', c: 'Education', d: 'Connected learning platform for students.', u: 'https://careers.chegg.com/', e: '📚' },
+  { n: 'Coursera', c: 'Education', d: 'Online degrees and professional certificates.', u: 'https://careers.coursera.com/', e: '📚' },
+  { n: 'Duolingo', c: 'Education', d: 'Science-based language learning platform.', u: 'https://careers.duolingo.com/', e: '📚' },
+  { n: 'Grad Leaders', c: 'Education', d: 'Career services technology for universities.', u: 'https://www.gradleaders.com/careers', e: '📚' },
   { n: 'Khan Academy', c: 'Education', d: 'Free, world-class education for anyone, anywhere.', u: 'https://www.khanacademy.org/careers', e: '📚' },
+  { n: 'Newsela', c: 'Education', d: 'Instructional content platform for K–12.', u: 'https://newsela.com/about/careers/', e: '📚' },
+  { n: 'Paper', c: 'Education', d: '24/7 tutoring and academic support for schools.', u: 'https://www.paper.co/careers', e: '📚' },
+  { n: 'Synthesis', c: 'Education', d: 'Problem-solving education for ambitious kids.', u: 'https://www.synthesis.com/careers', e: '📚' },
+  { n: 'Zearn', c: 'Education', d: 'Non-profit math learning for grades K–8.', u: 'https://about.zearn.org/careers', e: '📚' },
+  // Civic
+  { n: 'Beneficiary Technologies', c: 'Civic', d: 'Benefits access technology for government.', u: 'https://www.beneficiary.tech/careers', e: '🏛️' },
+  { n: 'Bloomberg Philanthropies', c: 'Civic', d: 'Philanthropy addressing climate, public health, arts.', u: 'https://www.bloomberg.org/careers/', e: '🏛️' },
   { n: 'Code for America', c: 'Civic', d: 'Technology in service of people and society.', u: 'https://www.codeforamerica.org/jobs', e: '🏛️' },
+  { n: 'DemocracyWorks', c: 'Civic', d: 'Nonpartisan voter registration and election tech.', u: 'https://www.democracy.works/careers', e: '🏛️' },
+  { n: 'mRelief', c: 'Civic', d: 'Simplifying benefits access for low-income families.', u: 'https://www.mrelief.com/about', e: '🏛️' },
+  { n: 'Nava PBC', c: 'Civic', d: 'Rebuilding government services for people.', u: 'https://www.navapbc.com/careers', e: '🏛️' },
+  { n: 'Palantir', c: 'Civic', d: 'Data platforms for government and enterprise.', u: 'https://www.palantir.com/careers/', e: '🏛️' },
+  { n: 'Propel', c: 'Civic', d: 'Financial tools for low-income Americans.', u: 'https://www.joinpropel.com/careers', e: '🏛️' },
+  { n: 'Topos', c: 'Civic', d: 'AI tools for civic and government organizations.', u: 'https://topos.ai/careers', e: '🏛️' },
+  { n: 'U.S. Digital Service', c: 'Civic', d: 'Improving federal services through technology.', u: 'https://www.usds.gov/apply', e: '🏛️' },
+  // FinTech
+  { n: 'Brex', c: 'FinTech', d: 'Financial OS for modern, scaling companies.', u: 'https://www.brex.com/careers', e: '💳' },
+  { n: 'Chime', c: 'FinTech', d: 'Fee-free banking for financial peace of mind.', u: 'https://www.chime.com/about/careers/', e: '💳' },
+  { n: 'Checkout.com', c: 'FinTech', d: 'Global payment solutions for digital business.', u: 'https://www.checkout.com/careers', e: '💳' },
+  { n: 'Climb Credit', c: 'FinTech', d: 'Income-share financing for career training.', u: 'https://climbcredit.com/careers', e: '💳' },
+  { n: 'Klarna', c: 'FinTech', d: 'Buy-now-pay-later and smart shopping tools.', u: 'https://www.klarna.com/careers/', e: '💳' },
+  { n: 'Marqeta', c: 'FinTech', d: 'Modern card issuing platform for innovators.', u: 'https://www.marqeta.com/company/careers', e: '💳' },
+  { n: 'Plaid', c: 'FinTech', d: 'Data network powering the fintech ecosystem.', u: 'https://plaid.com/careers/', e: '💳' },
+  { n: 'Ramp', c: 'FinTech', d: 'Corporate cards and expense management platform.', u: 'https://ramp.com/careers', e: '💳' },
+  { n: 'Stash', c: 'FinTech', d: 'Investing and banking app for everyday Americans.', u: 'https://www.stash.com/careers', e: '💳' },
   { n: 'Stripe', c: 'FinTech', d: 'Global payment infrastructure for the internet.', u: 'https://stripe.com/jobs', e: '💳' },
 ];
 
@@ -1364,19 +1431,23 @@ const TERMS = [
   { t: 'LLM', d: 'Large Language Model — the transformer-based cognitive engine powering modern conversational AI systems.' },
   { t: 'RAG', d: 'Retrieval-Augmented Generation. Grounds AI responses in verified, up-to-date external knowledge.' },
   { t: 'Prompting', d: 'The precise method of crafting instructions or context to guide AI toward the desired output or behavior.' },
+  { t: 'Fine-tuning', d: 'Adapting a pretrained model on a domain-specific dataset to improve performance on targeted tasks.' },
+  { t: 'Embedding', d: 'A dense vector representation of data (text, images) that captures semantic meaning in high-dimensional space.' },
+  { t: 'Token', d: 'The fundamental unit of text an LLM processes — roughly ¾ of a word in English on average.' },
+  { t: 'Agent', d: 'An autonomous AI system that perceives its environment, makes decisions, and takes goal-directed actions.' },
 ];
 
 const CATEGORIES = [
-  { id: 'All', icon: '✨', bg: 'bg-violet-50/60', border: 'border-violet-100' },
-  { id: 'Health', icon: '🏥', bg: 'bg-rose-50/60', border: 'border-rose-100' },
-  { id: 'Climate', icon: '🌍', bg: 'bg-emerald-50/60', border: 'border-emerald-100' },
-  { id: 'Education', icon: '📚', bg: 'bg-blue-50/60', border: 'border-blue-100' },
-  { id: 'Civic', icon: '🏛️', bg: 'bg-amber-50/60', border: 'border-amber-100' },
-  { id: 'FinTech', icon: '💳', bg: 'bg-indigo-50/60', border: 'border-indigo-100' },
+  { id: 'All', icon: '✨', bg: 'bg-violet-50/60', border: 'border-violet-100', d: 'Explore all mission-driven career opportunities across every sector.' },
+  { id: 'Health', icon: '🏥', bg: 'bg-rose-50/60', border: 'border-rose-100', d: 'Innovate in patient care and health technology for a healthier future.' },
+  { id: 'Climate', icon: '🌍', bg: 'bg-emerald-50/60', border: 'border-emerald-100', d: 'Join the fight against climate change with clean energy and sustainability.' },
+  { id: 'Education', icon: '📚', bg: 'bg-blue-50/60', border: 'border-blue-100', d: 'Empower the next generation through accessible and world-class learning.' },
+  { id: 'Civic', icon: '🏛️', bg: 'bg-amber-50/60', border: 'border-amber-100', d: 'Leverage technology to serve people and build more effective societies.' },
+  { id: 'FinTech', icon: '💳', bg: 'bg-indigo-50/60', border: 'border-indigo-100', d: 'Reimagine global payment infrastructure and financial services for all.' },
 ];
 
-const ResourceHubView = () => {
-  const [activePortal, setActivePortal] = useState('All');
+const ReskillingView = () => {
+  const [activePortal, setActivePortal] = useState('Google');
   const [activeCategory, setActiveCategory] = useState('All');
 
   const filteredModules = useMemo(() => {
@@ -1420,125 +1491,14 @@ const ResourceHubView = () => {
             <span className="inline-block px-6 py-2 bg-fm-violet/10 text-fm-violet text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-8">
               Resource Collective
             </span>
-            <h2 className="text-6xl md:text-8xl font-serif font-bold tracking-tighter leading-[0.85] mb-10 text-slate-900">
+            <h2 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter leading-tight mb-8 text-slate-900">
               Fuel your <br />
               <span className="text-fm-violet italic">infinite growth.</span>
             </h2>
-            <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
               A curated space for continuous upskilling, AI mastery, and staying ahead of the curve.
             </p>
           </motion.div>
-        </div>
-      </section>
-
-      {/* AI Career Pitch Lab Section */}
-      <section className="max-w-7xl mx-auto px-6">
-        <div className="mb-12">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-fm-violet mb-4 block">Interactive Workshop</span>
-          <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">🚀 AI Career Pitch Lab</h2>
-          <p className="text-slate-500 max-w-xl">Master the art of the AI-powered professional pitch in 3 steps.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {[
-            {
-              step: "Step 1: Brainstorm Your Structure",
-              desc: "I'm preparing a presentation on the transition to an AI-driven career. My primary goal is to demonstrate how experienced professionals can leverage their existing skills. Help me brainstorm 3 compelling ways to structure my presentation for recruiters.",
-              icon: <Zap className="text-fm-blue" size={24} />
-            },
-            {
-              step: "Step 2: Find Your \"Hook\" Statistic",
-              desc: "I like the Skills Transformation structure. Now I need a powerful hook. What's a surprising 2026 statistic about the demand for AI literacy in non-technical roles?",
-              icon: <TrendingUp className="text-fm-blue" size={24} />
-            },
-            {
-              step: "Step 3: Draft Your Opening",
-              desc: "I like the statistic about the 70% surge in AI demand. Draft an opening paragraph for my presentation. Generate 3 options ranging from inspiring to analytical.",
-              icon: <PenTool className="text-fm-blue" size={24} />
-            }
-          ].map((item, i) => (
-            <div key={i} className="glass-panel p-8 flex flex-col h-full bg-white border-slate-200">
-              <div className="w-12 h-12 bg-fm-blue/10 rounded-2xl flex items-center justify-center mb-6">
-                {item.icon}
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">{item.step}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 flex-1 italic">
-                "{item.desc}"
-              </p>
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(item.desc);
-                }}
-                className="copy-btn w-fit"
-              >
-                <Copy size={14} />
-                Copy Prompt
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Success Stories / Examples */}
-        <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-200">
-          <div className="flex items-center gap-4 mb-12">
-            <div className="p-3 bg-fm-violet/10 rounded-2xl">
-              <Award className="text-fm-violet" size={32} />
-            </div>
-            <div>
-              <h3 className="text-3xl font-serif font-bold text-slate-900">Example Success Stories</h3>
-              <p className="text-slate-500">See how these prompts transform a blank page into a finished pitch.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            <div className="space-y-8">
-              <div className="flex items-center gap-3 text-fm-blue font-bold uppercase tracking-widest text-[10px]">
-                <div className="w-6 h-[1px] bg-fm-blue" />
-                Step 1: Brainstorming
-              </div>
-              <div className="glass-panel p-8 bg-white border-slate-200 shadow-sm">
-                <h4 className="text-xl font-bold text-slate-900 mb-6">The "Skills Bridge" Structure</h4>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                  Directly maps traditional skills (Project Management, Data Analysis) to their AI counterparts (Prompt Engineering, LLM Orchestration), showing how the professional remains the "Pilot."
-                </p>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-xs text-slate-400">
-                  "This structure is most empowering for mid-career professionals."
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="flex items-center gap-3 text-fm-blue font-bold uppercase tracking-widest text-[10px]">
-                <div className="w-6 h-[1px] bg-fm-blue" />
-                Step 2: The Hook
-              </div>
-              <div className="glass-panel p-8 bg-white border-slate-200 shadow-sm">
-                <h4 className="text-xl font-bold text-slate-900 mb-6">The "70% Surge" Statistic</h4>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                  "By 2026, 70% of non-technical roles will require AI literacy as a baseline requirement, a 400% increase from 2023."
-                </p>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-xs text-slate-400">
-                  "A powerful way to grab attention immediately."
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="flex items-center gap-3 text-fm-blue font-bold uppercase tracking-widest text-[10px]">
-                <div className="w-6 h-[1px] bg-fm-blue" />
-                Step 3: The Opening
-              </div>
-              <div className="glass-panel p-8 bg-white border-slate-200 shadow-sm">
-                <h4 className="text-xl font-bold text-slate-900 mb-6">The Inspiring Opening</h4>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                  "We stand at a crossroads where experience meets evolution. AI isn't replacing the professional; it's amplifying the wisdom we've built over decades."
-                </p>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-xs text-slate-400">
-                  "Sets a positive, forward-looking tone for the pitch."
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1584,8 +1544,15 @@ const ResourceHubView = () => {
                       {m.e}
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-indigo-900 mb-2 group-hover:text-fm-violet transition-colors">{m.n}</h4>
-                      <p className="text-base text-blue-500 leading-relaxed">{m.d}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="text-xl font-bold text-indigo-900 group-hover:text-fm-violet transition-colors">{m.n}</h4>
+                        {m.d.includes('(Recommended)') && (
+                          <span className="px-3 py-1 bg-amber-100 text-amber-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-amber-200">
+                            Recommended
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-base text-blue-500 leading-relaxed">{m.d.replace(' (Recommended)', '')}</p>
                     </div>
                   </div>
                       <ExternalLink size={24} className="text-blue-200 group-hover:text-fm-violet transition-colors" />
@@ -1618,6 +1585,11 @@ const ResourceHubView = () => {
           </div>
 
           <div className="lg:w-3/4 bg-white rounded-[2.5rem] p-10 shadow-xl border border-blue-100">
+            <div className="mb-10 pb-10 border-b border-slate-50">
+              <p className="text-slate-400 font-light italic">
+                {CATEGORIES.find(c => c.id === activeCategory)?.d}
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {filteredPaths.map((p, i) => (
                 <a
@@ -1625,7 +1597,7 @@ const ResourceHubView = () => {
                   href={p.u}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-8 rounded-[2rem] bg-blue-50 hover:bg-white hover:shadow-xl transition-all group border border-transparent hover:border-blue-100 shadow-sm"
+                  className="p-8 rounded-[2rem] bg-blue-50 hover:bg-blue-50 hover:shadow-xl transition-all group border border-transparent hover:border-blue-100 shadow-sm"
                 >
                   <div className="flex items-center gap-6 mb-6">
                     <div className="text-4xl group-hover:scale-110 transition-transform">{p.e}</div>
@@ -1682,10 +1654,10 @@ const LinkedInFlyer = ({ onBack }: { onBack: () => void }) => {
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-500 hover:text-fm-blue mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
       >
-        <ArrowLeft size={20} />
-        Back to Dashboard
+        <ArrowLeft size={16} />
+        Back Home
       </button>
 
       <div className="bg-white text-slate-900 rounded-[3rem] overflow-hidden shadow-2xl relative border border-slate-200">
@@ -1702,7 +1674,7 @@ const LinkedInFlyer = ({ onBack }: { onBack: () => void }) => {
               transition={{ delay: 0.2 }}
             >
               <span className="inline-block px-6 py-2 bg-fm-violet/10 text-fm-violet text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-10">
-                The Future of Career Scouting
+                The Future of Career Discovery
               </span>
               <h1 className="text-8xl md:text-9xl font-serif font-bold tracking-tighter leading-[0.88] mb-10 text-slate-900">
                 Forward <br />
@@ -1798,7 +1770,7 @@ const LinkedInFlyer = ({ onBack }: { onBack: () => void }) => {
               <Search className="text-white" size={32} />
             </div>
             <div>
-              <h3 className="font-bold text-2xl text-slate-900">Forward Moves USA Scout</h3>
+              <h3 className="font-bold text-2xl text-slate-900">Forward Moves USA</h3>
               <p className="text-base text-slate-500">Built with Gemini 3.1 Flash & Google Search</p>
             </div>
           </div>
@@ -1876,10 +1848,10 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-500 hover:text-fm-blue mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
       >
-        <ArrowLeft size={20} />
-        Back to Dashboard
+        <ArrowLeft size={16} />
+        Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
@@ -2057,7 +2029,7 @@ const SWOTModal = ({ job, onClose }: { job: Job; onClose: () => void }) => {
               <Loader2 className="animate-spin text-fm-blue" size={48} />
               <p className="text-blue-500 font-medium">
               Analyzing job market data for{' '}
-              <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-fm-blue underline hover:text-blue-800 transition-colors">
+              <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="text-fm-blue underline hover:text-blue-600 transition-colors">
                 {job.company}
               </a>...
             </p>
@@ -2128,14 +2100,14 @@ const SWOTModal = ({ job, onClose }: { job: Job; onClose: () => void }) => {
         </div>
         
         <div className="p-6 border-t bg-blue-50 flex justify-end">
-          <button onClick={onClose} className="btn-primary">Close Analysis</button>
+          <button onClick={onClose} className="px-8 py-3 bg-fm-blue text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">Close Analysis</button>
         </div>
       </motion.div>
     </motion.div>
   );
 };
 
-const ComparisonTable = ({ jobs, onRemove, onGoToDashboard }: { jobs: Job[]; onRemove: (id: string) => void; onGoToDashboard: () => void }) => {
+const ComparisonTable = ({ jobs, onRemove, onGoHome }: { jobs: Job[]; onRemove: (id: string) => void; onGoHome: () => void }) => {
   if (jobs.length === 0) {
     return (
       <div className="p-20 text-center glass-panel bg-white border-slate-200 shadow-lg rounded-[2.5rem]">
@@ -2143,12 +2115,12 @@ const ComparisonTable = ({ jobs, onRemove, onGoToDashboard }: { jobs: Job[]; onR
           <TableIcon size={40} />
         </div>
         <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">No jobs selected for comparison</h3>
-        <p className="text-slate-500 mb-8 max-w-md mx-auto">Add jobs from the dashboard by clicking the "Compare" icon on any job card to see them side-by-side.</p>
+        <p className="text-slate-400 mb-8 max-w-md mx-auto font-light">Add jobs from the home page by clicking the "Compare" icon on any job card to see them side-by-side.</p>
         <button 
-          onClick={onGoToDashboard}
-          className="btn-primary px-8 py-4 rounded-2xl text-sm shadow-xl shadow-fm-blue/10"
+          onClick={onGoHome}
+          className="px-10 py-5 bg-fm-blue text-white rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-2xl shadow-blue-900/10"
         >
-          Go to Dashboard
+          Go Home
         </button>
       </div>
     );
@@ -2231,16 +2203,131 @@ const ComparisonTable = ({ jobs, onRemove, onGoToDashboard }: { jobs: Job[]; onR
   );
 };
 
+const FeedbackSection = () => {
+  const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', allowContact: false });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (response.ok) {
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 5000);
+        setFormData({ name: '', email: '', message: '', allowContact: false });
+      }
+    } catch (error) {
+      console.error('Error sending feedback:', error);
+    }
+  };
+
+  return (
+    <section className="py-24 px-8 bg-slate-50 border-t border-slate-200">
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="inline-block p-4 bg-fm-blue/10 rounded-3xl mb-8">
+          <MessageSquare className="text-fm-blue" size={32} />
+        </div>
+        <h2 className="text-5xl font-serif font-bold text-slate-900 mb-6">We Value Your Feedback</h2>
+        <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto">
+          Help us improve Forward Moves USA and get better results from your job search.
+        </p>
+
+        <div className="glass-panel bg-white p-10 shadow-xl rounded-[2rem] text-left">
+          {submitted ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="py-12 text-center"
+            >
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="text-emerald-500" size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h3>
+              <p className="text-slate-500 italic">Your feedback has been sent privately.</p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="Your name"
+                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-fm-blue/20 focus:border-fm-blue outline-none transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="your@email.com"
+                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-fm-blue/20 focus:border-fm-blue outline-none transition-all"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Message</label>
+                <textarea 
+                  required
+                  value={formData.message}
+                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  placeholder="What worked well? What didn't? Any suggestions?"
+                  rows={4}
+                  className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-fm-blue/20 focus:border-fm-blue outline-none transition-all resize-none"
+                />
+                <p className="text-xs text-slate-400 mt-2 ml-1 italic">
+                  Did your match score improve or did you gain new insights? Tell us!
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3 px-2">
+                <input 
+                  type="checkbox" 
+                  id="allowContact"
+                  checked={formData.allowContact}
+                  onChange={(e) => setFormData({...formData, allowContact: e.target.checked})}
+                  className="w-5 h-5 rounded border-slate-300 text-fm-blue focus:ring-fm-blue/20 cursor-pointer"
+                />
+                <label htmlFor="allowContact" className="text-sm text-slate-600 cursor-pointer select-none">
+                  I’m open to being contacted for follow-up or feedback
+                </label>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-5 bg-fm-blue text-white rounded-2xl font-bold text-lg hover:bg-blue-700 active:scale-[0.98] transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center gap-3"
+              >
+                Share Feedback
+                <Send size={20} />
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export default function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedForComparison, setSelectedForComparison] = useState<Job[]>([]);
   const [activeSWOT, setActiveSWOT] = useState<Job | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [view, setView] = useState<'dashboard' | 'comparison' | 'resume-matcher' | 'resume-reviser' | 'interview-prep' | 'cover-letter' | 'resource-hub' | 'showcase'>('dashboard');
+  const [view, setView] = useState<'home' | 'comparison' | 'resume-matcher' | 'resume-reviser' | 'interview-prep' | 'cover-letter' | 'reskilling'>('home');
   const [matchingJob, setMatchingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState('');
-  const [dashboardTab, setDashboardTab] = useState<'start' | 'discover' | 'labs' | 'insights'>('start');
+  const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling'>('start');
 
   const fetchJobs = async (query?: string) => {
     setLoading(true);
@@ -2310,7 +2397,7 @@ export default function App() {
   }, [jobs]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900">
       {/* Disclaimer Banner */}
       <div className="bg-amber-50 border-b border-amber-100 py-2 px-8 text-center">
         <p className="text-xs text-amber-800 font-medium">
@@ -2319,52 +2406,43 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="bg-white text-slate-900 py-6 px-8 shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-4">
-            <div className="bg-fm-blue/10 p-3 rounded-2xl">
-              <Search className="text-fm-blue" size={32} />
+      <header className="bg-white py-10 px-12 border-b border-slate-50">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-fm-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl">F.</div>
+              <h1 className="text-xl font-bold tracking-tighter text-slate-900 hidden sm:block">Forward Moves</h1>
             </div>
-            <div>
-              <h1 className="text-3xl font-serif font-bold tracking-tight text-slate-900">Forward Moves USA Scout</h1>
-              <p className="text-slate-500 text-sm font-medium">Empowering career transitions across the nation</p>
-            </div>
+            
+            <nav className="hidden lg:flex items-center gap-10">
+              <button 
+                onClick={() => setView('home')} 
+                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${view === 'home' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => setView('comparison')} 
+                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative ${view === 'comparison' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+              >
+                Comparison
+                {selectedForComparison.length > 0 && (
+                  <span className="absolute -top-2 -right-4 bg-fm-violet text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">
+                    {selectedForComparison.length}
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={() => { setView('home'); setHomeTab('reskilling'); }} 
+                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${view === 'home' && homeTab === 'reskilling' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+              >
+                Reskilling
+              </button>
+            </nav>
           </div>
 
-          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200">
-            <button 
-              onClick={() => setView('dashboard')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${view === 'dashboard' ? 'bg-white text-fm-blue shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              <LayoutDashboard size={20} />
-              <span className="text-xs font-bold uppercase tracking-widest">Dashboard</span>
-            </button>
-            <button 
-              onClick={() => setView('comparison')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all relative ${view === 'comparison' ? 'bg-white text-fm-blue shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              <TableIcon size={20} />
-              <span className="text-xs font-bold uppercase tracking-widest">Comparison</span>
-              {selectedForComparison.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-fm-violet text-white text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
-                  {selectedForComparison.length}
-                </span>
-              )}
-            </button>
-            <button 
-              onClick={() => setView('resource-hub')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${view === 'resource-hub' ? 'bg-white text-fm-blue shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              <Compass size={20} />
-              <span className="text-xs font-bold uppercase tracking-widest">Resource Hub</span>
-            </button>
-            <button 
-              onClick={() => setView('showcase')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${view === 'showcase' ? 'bg-fm-violet text-white shadow-lg' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              <Award size={20} />
-              <span className="text-xs font-bold uppercase tracking-widest">Showcase</span>
-            </button>
+          <div className="flex items-center gap-8">
+            {/* Login and Get Started removed per user request */}
           </div>
         </div>
       </header>
@@ -2373,71 +2451,38 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-8 space-y-8">
         
         {view === 'resume-matcher' && matchingJob ? (
-          <ResumeMatcher job={matchingJob} onBack={() => setView('dashboard')} initialResumeText={resumeText} />
+          <ResumeMatcher job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
         ) : view === 'resume-reviser' && matchingJob ? (
-          <ResumeReviser job={matchingJob} onBack={() => setView('dashboard')} initialResumeText={resumeText} />
+          <ResumeReviser job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
         ) : view === 'interview-prep' && matchingJob ? (
-          <InterviewPrepView job={matchingJob} onBack={() => setView('dashboard')} />
+          <InterviewPrepView job={matchingJob} onBack={() => setView('home')} />
         ) : view === 'cover-letter' && matchingJob ? (
-          <CoverLetterDrafter job={matchingJob} onBack={() => setView('dashboard')} initialResumeText={resumeText} />
-        ) : view === 'resource-hub' ? (
-          <ResourceHubView />
-        ) : view === 'showcase' ? (
-          <LinkedInFlyer onBack={() => setView('dashboard')} />
-        ) : view === 'dashboard' ? (
+          <CoverLetterDrafter job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+        ) : view === 'home' ? (
           <>
-            {/* Dashboard Process Navigation */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 bg-slate-50 p-2 rounded-[2.5rem] border border-slate-200">
-              <div className="flex w-full md:w-auto p-1 bg-white rounded-2xl shadow-sm border border-slate-100">
-                <button 
-                  onClick={() => setDashboardTab('start')}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-3 rounded-xl transition-all font-bold text-xs uppercase tracking-widest ${dashboardTab === 'start' ? 'bg-fm-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                  <FileText size={18} />
-                  1. Setup
-                </button>
-                <button 
-                  onClick={() => setDashboardTab('discover')}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-3 rounded-xl transition-all font-bold text-xs uppercase tracking-widest ${dashboardTab === 'discover' ? 'bg-fm-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                  <Search size={18} />
-                  2. Discover
-                </button>
-                <button 
-                  onClick={() => setDashboardTab('labs')}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-3 rounded-xl transition-all font-bold text-xs uppercase tracking-widest ${dashboardTab === 'labs' ? 'bg-fm-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                  <FlaskConical size={18} />
-                  3. Labs
-                </button>
-                <button 
-                  onClick={() => setDashboardTab('insights')}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-3 rounded-xl transition-all font-bold text-xs uppercase tracking-widest ${dashboardTab === 'insights' ? 'bg-fm-blue text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                  <TrendingUp size={18} />
-                  4. Insights
-                </button>
-              </div>
-              
-              <div className="hidden lg:flex items-center gap-4 px-6 py-2 bg-white rounded-full border border-slate-100 shadow-sm">
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className={`w-2.5 h-2.5 rounded-full border border-white transition-all duration-500 ${
-                      (i === 1 && dashboardTab === 'start') || 
-                      (i === 2 && dashboardTab === 'discover') || 
-                      (i === 3 && dashboardTab === 'labs') ||
-                      (i === 4 && dashboardTab === 'insights') ? 'bg-fm-blue scale-125 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-slate-200'
-                    }`} />
-                  ))}
-                </div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest min-w-[100px] text-center">
-                  {dashboardTab === 'start' ? 'Preparation' : dashboardTab === 'discover' ? 'Market Search' : dashboardTab === 'labs' ? 'AI Labs' : 'Strategic Insights'}
-                </span>
-              </div>
-            </div>
+            <LandingSection />
+            
+            <QuickStartGuide 
+              onStart={() => {
+                setHomeTab('start');
+                setTimeout(() => {
+                  const el = document.getElementById('portal-content-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }} 
+              onSetTab={(tab) => {
+                setHomeTab(tab);
+                setTimeout(() => {
+                  const el = document.getElementById('portal-content-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              onSetView={setView}
+            />
 
-            <AnimatePresence mode="wait">
-              {dashboardTab === 'start' && (
+            <div id="portal-content-section" className="scroll-mt-20">
+              <AnimatePresence mode="wait">
+              {homeTab === 'start' && (
                 <motion.div
                   key="start"
                   initial={{ opacity: 0, y: 10 }}
@@ -2446,23 +2491,16 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                   className="space-y-12"
                 >
-                  <LandingSection />
-                  <QuickStartGuide 
-                    onStart={() => {
-                      const el = document.getElementById('resume-upload-section');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }} 
-                    onSetTab={setDashboardTab}
-                  />
                   <ResumeSetup onSet={(text) => {
                     setResumeText(text);
-                    setDashboardTab('discover');
+                    setHomeTab('discover');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }} currentResume={resumeText} />
+                  <FeedbackSection />
                 </motion.div>
               )}
 
-              {dashboardTab === 'discover' && (
+              {homeTab === 'discover' && (
                 <motion.div
                   key="discover"
                   initial={{ opacity: 0, y: 10 }}
@@ -2537,7 +2575,7 @@ export default function App() {
                       </div>
                       
                       <button 
-                        onClick={() => setDashboardTab('insights')}
+                        onClick={() => setHomeTab('insights')}
                         className="mt-8 w-full py-4 bg-white text-fm-blue rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg hover:bg-blue-50"
                       >
                         Deep Dive Analysis
@@ -2617,7 +2655,7 @@ export default function App() {
                         exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4"
                       >
-                        <div className="bg-slate-900/90 backdrop-blur-xl border border-white/20 p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-6">
+                        <div className="bg-fm-blue/90 backdrop-blur-xl border border-white/20 p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-6">
                           <div className="flex items-center gap-4 overflow-hidden">
                             <div className="flex -space-x-3">
                               {selectedForComparison.map((job, i) => (
@@ -2653,102 +2691,7 @@ export default function App() {
                 </motion.div>
               )}
 
-              {dashboardTab === 'labs' && (
-                <motion.div
-                  key="labs"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-20"
-                >
-                  <div className="text-center max-w-3xl mx-auto">
-                    <h2 className="text-5xl font-serif font-bold text-slate-900 mb-6">The AI Career <span className="text-fm-blue italic">Labs</span></h2>
-                    <p className="text-xl text-slate-500 leading-relaxed">
-                      Our "Labs" are interactive, AI-powered environments where you don't just get results—you master the skills of the future. Each lab is designed to teach you the logic of AI interaction.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[
-                      {
-                        title: "Resume Matcher Lab",
-                        desc: "Analyze your resume against any job description to see your compatibility score and identify keyword gaps.",
-                        icon: <Zap className="text-fm-blue" />,
-                        action: matchingJob ? "Continue with Current Job" : "Select a Job to Match",
-                        onClick: () => {
-                          if (matchingJob) setView('resume-matcher');
-                          else setDashboardTab('discover');
-                        }
-                      },
-                      {
-                        title: "Resume Reviser Lab",
-                        desc: "Transform your traditional resume into an AI-optimized masterpiece that highlights your future-ready skills.",
-                        icon: <PenTool className="text-fm-violet" />,
-                        action: matchingJob ? "Revise for Current Job" : "Select a Job to Revise",
-                        onClick: () => {
-                          if (matchingJob) setView('resume-reviser');
-                          else setDashboardTab('discover');
-                        }
-                      },
-                      {
-                        title: "Cover Letter Lab",
-                        desc: "Craft high-impact, personalized cover letters that tell your story of evolution and AI readiness.",
-                        icon: <FileText className="text-teal-600" />,
-                        action: matchingJob ? "Draft for Current Job" : "Select a Job to Draft",
-                        onClick: () => {
-                          if (matchingJob) setView('cover-letter');
-                          else setDashboardTab('discover');
-                        }
-                      },
-                      {
-                        title: "Interview Prep Lab",
-                        desc: "Generate strategic interview guides, including likely questions and high-impact answers tailored to the role.",
-                        icon: <MessageSquare className="text-indigo-600" />,
-                        action: matchingJob ? "Prep for Current Job" : "Select a Job to Prep",
-                        onClick: () => {
-                          if (matchingJob) setView('interview-prep');
-                          else setDashboardTab('discover');
-                        }
-                      },
-                      {
-                        title: "SWOT Analysis Lab",
-                        desc: "Get a deep strategic breakdown of your fit for any role, including strengths to leverage and threats to mitigate.",
-                        icon: <Shield className="text-fm-blue" />,
-                        action: matchingJob ? "Analyze Current Job" : "Select a Job to Analyze",
-                        onClick: () => {
-                          if (matchingJob) setActiveSWOT(matchingJob);
-                          else setDashboardTab('discover');
-                        }
-                      },
-                      {
-                        title: "Pitch Lab",
-                        desc: "Master your professional narrative. Learn how to pitch your career transition as a strategic advantage.",
-                        icon: <Award className="text-fm-orange" />,
-                        action: "View Showcase",
-                        onClick: () => setView('showcase')
-                      }
-                    ].map((lab, i) => (
-                      <div key={i} className="glass-panel p-8 bg-white border-slate-200 shadow-lg hover:shadow-2xl transition-all flex flex-col h-full">
-                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
-                          {React.cloneElement(lab.icon as React.ReactElement<any>, { size: 28 })}
-                        </div>
-                        <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">{lab.title}</h3>
-                        <p className="text-slate-500 mb-8 flex-1 leading-relaxed">{lab.desc}</p>
-                        <button 
-                          onClick={lab.onClick}
-                          className="w-full py-4 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-fm-blue transition-all shadow-lg"
-                        >
-                          {lab.action}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <LabPhilosophy />
-                </motion.div>
-              )}
-              {dashboardTab === 'insights' && (
+              {homeTab === 'insights' && (
                 <motion.div
                   key="insights"
                   initial={{ opacity: 0, y: 10 }}
@@ -2764,63 +2707,78 @@ export default function App() {
                   <FutureOutlook />
                 </motion.div>
               )}
+
+              {homeTab === 'reskilling' && (
+                <motion.div
+                  key="reskilling"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ReskillingView />
+                </motion.div>
+              )}
             </AnimatePresence>
-          </>
+          </div>
+        </>
         ) : (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-indigo-900">Job Comparison</h2>
-              <button onClick={() => setView('dashboard')} className="text-fm-blue hover:underline text-sm font-medium flex items-center gap-1">
-                Back to Dashboard <ArrowRight size={14} />
+              <h2 className="text-3xl font-bold text-slate-900 tracking-tighter">Job Comparison</h2>
+              <button onClick={() => setView('home')} className="text-slate-400 hover:text-fm-blue text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all">
+                <ArrowLeft size={14} />
+                Back Home
               </button>
             </div>
             <ComparisonTable 
               jobs={selectedForComparison} 
               onRemove={(id) => setSelectedForComparison(prev => prev.filter(j => j.id !== id))} 
-              onGoToDashboard={() => setView('dashboard')}
+              onGoHome={() => setView('home')}
             />
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white text-slate-500 py-20 px-8 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
-          <div>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="bg-fm-blue/10 p-3 rounded-2xl">
-                <Search className="text-fm-blue" size={24} />
-              </div>
-              <span className="text-slate-900 font-serif font-bold text-2xl">Forward Moves USA Scout</span>
+      <footer className="bg-white py-32 px-12 border-t border-slate-50">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-20">
+          <div className="max-w-sm">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 bg-fm-blue rounded-xl flex items-center justify-center text-white font-bold text-sm">F.</div>
+              <span className="text-slate-900 font-bold text-xl tracking-tighter">Forward Moves</span>
             </div>
-            <p className="text-slate-500 text-base leading-relaxed mb-10">
+            <p className="text-slate-400 text-sm leading-relaxed font-light">
               Empowering job seekers nationwide with AI-driven insights and curated career resources.
             </p>
           </div>
-          <div>
-            <h4 className="text-slate-900 font-bold mb-6 uppercase tracking-wider text-sm">Featured Companies</h4>
-            <ul className="text-base space-y-3">
-              <li className="hover:text-fm-blue transition-colors cursor-pointer">Audible (Newark)</li>
-              <li className="hover:text-fm-blue transition-colors cursor-pointer">Merck (Rahway)</li>
-              <li className="hover:text-fm-blue transition-colors cursor-pointer">Johnson & Johnson (New Brunswick)</li>
-              <li className="hover:text-fm-blue transition-colors cursor-pointer">Prudential (Newark)</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-slate-900 font-bold mb-6 uppercase tracking-wider text-sm">Powered By</h4>
-            <p className="text-base mb-6 text-slate-500">Google Search Grounding & Gemini 3.1 Flash</p>
-            <div className="flex gap-6">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200">
-                <TrendingUp size={20} className="text-slate-400" />
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200">
-                <Shield size={20} className="text-slate-400" />
-              </div>
+          
+          <div className="grid grid-cols-2 gap-20">
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-8">Technology</h4>
+              <ul className="space-y-4">
+                <li className="text-slate-400 text-xs font-light">Google Search</li>
+                <li className="text-slate-400 text-xs font-light">Gemini 3.1 Flash</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-8">Legal</h4>
+              <ul className="space-y-4">
+                <li className="text-slate-400 text-xs font-light">Privacy Policy</li>
+                <li className="text-slate-400 text-xs font-light">Terms of Service</li>
+              </ul>
             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-10 border-t border-slate-100 text-center text-xs font-bold uppercase tracking-[0.3em] text-slate-400">
-          &copy; 2026 Forward Moves USA Scout. All rights reserved. Data sourced via Google Search.
+        
+        <div className="max-w-7xl mx-auto mt-32 pt-12 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
+            &copy; 2026 Forward Moves USA.
+          </div>
+          <div className="flex gap-8">
+            <TrendingUp size={16} className="text-slate-200" />
+            <Shield size={16} className="text-slate-200" />
+          </div>
         </div>
       </footer>
 
