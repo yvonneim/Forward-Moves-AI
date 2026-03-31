@@ -36,6 +36,7 @@ import { Job, SWOTAnalysis, ResumeMatch, InterviewPrep, CoverLetter, RevisedResu
 import { searchJobs, generateSWOT } from './services/jobService';
 import { matchResumeToJob, reviseResume } from './services/resumeService';
 import { generateInterviewPrep, generateCoverLetter, getInterviewFeedback } from './services/applicationService';
+import { chatWithScout, ScoutMessage } from './services/scoutService';
 import Markdown from 'react-markdown';
 import { 
   FileText,
@@ -85,7 +86,7 @@ const LandingSection = () => (
         </span>
       </div>
       
-      <h2 className="text-5xl md:text-7xl font-bold text-slate-900 mb-8 leading-[0.9] tracking-tighter">
+      <h2 className="text-5xl md:text-7xl font-bold text-slate-800 mb-8 leading-[0.9] tracking-tighter">
         Step Into Your <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-fm-blue to-fm-violet">
           AI-Driven Future.
@@ -100,7 +101,7 @@ const LandingSection = () => (
   </div>
 );
 
-const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void; onSetTab: (tab: 'start' | 'discover' | 'labs' | 'insights' | 'reskilling') => void; onSetView: (view: any) => void }) => (
+const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void; onSetTab: (tab: 'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'scout') => void; onSetView: (view: any) => void }) => (
   <div className="mb-20">
     <div className="flex flex-col items-center text-center mb-16">
       <div className="w-20 h-20 bg-fm-blue rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-fm-blue/10 mb-8">
@@ -110,8 +111,15 @@ const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void
       <p className="text-slate-400 text-xl max-w-2xl font-light leading-relaxed">Your gateway to the AI-driven workforce. Select a path to begin your journey.</p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
       {[
+        {
+          title: "AI Career Scout",
+          desc: "Ask our Gemini-powered assistant about job trends, company news, and career advice.",
+          icon: <Globe className="text-slate-900" size={28} />,
+          onClick: () => onSetTab('scout'),
+          color: "bg-fm-blue/5"
+        },
         {
           title: "Reskilling Portal",
           desc: "Access curated learning modules and technical reskilling programs to master AI skills.",
@@ -1147,6 +1155,15 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
     }
   };
 
+  const handleStartOver = () => {
+    setCoverLetter(null);
+    setResumeText('');
+  };
+
+  const handleClear = () => {
+    setResumeText('');
+  };
+
   const copyToClipboard = () => {
     if (coverLetter) {
       navigator.clipboard.writeText(coverLetter.content);
@@ -1189,17 +1206,42 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
 
         <div className="p-8">
           {!coverLetter ? (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <div className="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                <div>
+                  <h3 className="font-bold text-emerald-900">Paste Your Resume</h3>
+                  <p className="text-xs text-emerald-500">We'll use your experience to draft a custom pitch.</p>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-bold text-blue-700 uppercase tracking-wider mb-2">
-                  Paste Your Resume Text
-                </label>
+                <div className="flex justify-between items-end mb-2">
+                  <label className="block text-sm font-bold text-blue-700 uppercase tracking-wider">
+                    Paste Your Resume Text
+                  </label>
+                  <button 
+                    onClick={handleClear}
+                    className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center gap-1"
+                  >
+                    <X size={12} />
+                    Clear All
+                  </button>
+                </div>
                 <textarea
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   placeholder="Paste your resume here to personalize the cover letter..."
-                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-emerald-500 focus:ring-0 transition-all resize-none font-sans text-blue-700"
+                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-emerald-500 focus:ring-0 transition-all resize-none font-sans text-blue-700 shadow-inner"
                 />
+              </div>
+
+              <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 opacity-50">
+                <div className="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                <div>
+                  <h3 className="font-bold text-emerald-900">Generate Pitch</h3>
+                  <p className="text-xs text-emerald-500">AI will create a compelling cover letter for you.</p>
+                </div>
               </div>
               <button
                 onClick={handleGenerate}
@@ -1247,12 +1289,21 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
                 </div>
               </div>
 
-              <button
-                onClick={() => setCoverLetter(null)}
-                className="w-full py-4 border-2 border-blue-200 text-blue-500 rounded-2xl font-bold hover:bg-blue-50 transition-all"
-              >
-                Start Over with New Details
-              </button>
+              <div className="pt-10 border-t border-blue-100 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleStartOver}
+                  className="flex-1 py-4 bg-white border-2 border-blue-100 text-emerald-600 rounded-2xl font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft size={20} />
+                  Start Over
+                </button>
+                <button
+                  onClick={onBack}
+                  className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all"
+                >
+                  Back to Jobs
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -1265,18 +1316,32 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
   const [resumeText, setResumeText] = useState(initialResumeText);
   const [match, setMatch] = useState<ResumeMatch | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleMatch = async () => {
     if (!resumeText.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await matchResumeToJob(resumeText, job);
       setMatch(result);
-    } catch (error) {
-      console.error('Error matching resume:', error);
+    } catch (err) {
+      console.error('Error matching resume:', err);
+      setError('Failed to analyze resume. Please try again with a shorter text or check your connection.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartOver = () => {
+    setMatch(null);
+    setResumeText('');
+    setError(null);
+  };
+
+  const handleClear = () => {
+    setResumeText('');
+    setError(null);
   };
 
   return (
@@ -1314,22 +1379,55 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
 
         <div className="p-8">
           {!match ? (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <div className="w-10 h-10 bg-fm-blue text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                <div>
+                  <h3 className="font-bold text-blue-900">Paste Your Resume</h3>
+                  <p className="text-xs text-blue-500">Copy the text from your current resume and paste it below.</p>
+                </div>
+              </div>
+
               <div>
-                <label 
-                  htmlFor="resume-matcher-text"
-                  className="block text-sm font-bold text-blue-700 uppercase tracking-wider mb-2"
-                >
-                  Paste Your Resume Text
-                </label>
+                <div className="flex justify-between items-end mb-2">
+                  <label 
+                    htmlFor="resume-matcher-text"
+                    className="block text-sm font-bold text-blue-700 uppercase tracking-wider"
+                  >
+                    Paste Your Resume Text
+                  </label>
+                  <button 
+                    onClick={handleClear}
+                    className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-fm-blue transition-colors flex items-center gap-1"
+                  >
+                    <X size={12} />
+                    Clear All
+                  </button>
+                </div>
                 <textarea
                   id="resume-matcher-text"
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   placeholder="Paste the full text of your resume here..."
-                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-fm-blue focus:ring-0 transition-all resize-none font-sans text-blue-700"
+                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-fm-blue focus:ring-0 transition-all resize-none font-sans text-blue-700 shadow-inner"
                 />
               </div>
+
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100 opacity-50">
+                <div className="w-10 h-10 bg-fm-blue text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                <div>
+                  <h3 className="font-bold text-blue-900">Get Your Score</h3>
+                  <p className="text-xs text-blue-500">Our AI will analyze how well you match this specific job.</p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 text-red-600">
+                  <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              )}
+
               <button
                 onClick={handleMatch}
                 disabled={loading || !resumeText.trim()}
@@ -1435,12 +1533,21 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
                 </ul>
               </div>
 
-              <button
-                onClick={() => setMatch(null)}
-                className="w-full py-4 border-2 border-blue-200 text-blue-500 rounded-2xl font-bold hover:bg-blue-50 transition-all"
-              >
-                Re-analyze with Updated Resume
-              </button>
+              <div className="pt-8 border-t border-blue-100 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleStartOver}
+                  className="flex-1 py-4 bg-white border-2 border-blue-100 text-fm-blue rounded-2xl font-bold hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft size={20} />
+                  Start Over
+                </button>
+                <button
+                  onClick={onBack}
+                  className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all"
+                >
+                  Back to Jobs
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -1975,18 +2082,32 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
   const [revised, setRevised] = useState<RevisedResume | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleRevise = async () => {
     if (!resumeText.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await reviseResume(resumeText, job);
       setRevised(result);
-    } catch (error) {
-      console.error('Error revising resume:', error);
+    } catch (err) {
+      console.error('Error revising resume:', err);
+      setError('Failed to revise resume. Please try again with a shorter text or check your connection.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartOver = () => {
+    setRevised(null);
+    setResumeText('');
+    setError(null);
+  };
+
+  const handleClear = () => {
+    setResumeText('');
+    setError(null);
   };
 
   const copyToClipboard = () => {
@@ -2044,8 +2165,16 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
 
         <div className="p-8">
           {!revised ? (
-            <div className="space-y-6">
-                      <div className="p-6 bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200 hover:border-fm-violet transition-all">
+            <div className="space-y-8">
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <div className="w-10 h-10 bg-fm-violet text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                <div>
+                  <h3 className="font-bold text-blue-900">Provide Your Resume</h3>
+                  <p className="text-xs text-blue-500">Upload a file or paste your text to get started.</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200 hover:border-fm-violet transition-all">
                 <div className="flex flex-col items-center justify-center text-center">
                   <FileText className="text-blue-300 mb-4" size={48} />
                   <h3 className="text-lg font-bold text-blue-700 mb-2">Upload Your Resume</h3>
@@ -2066,21 +2195,53 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
                 </div>
               </div>
 
+              <div className="relative flex items-center justify-center py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-blue-100"></div>
+                </div>
+                <span className="relative px-4 bg-white text-[10px] font-bold text-blue-300 uppercase tracking-widest">OR</span>
+              </div>
+
               <div>
-                <label 
-                  htmlFor="resume-reviser-text"
-                  className="block text-sm font-bold text-blue-700 uppercase tracking-wider mb-2"
-                >
-                  Resume Content
-                </label>
+                <div className="flex justify-between items-end mb-2">
+                  <label 
+                    htmlFor="resume-reviser-text"
+                    className="block text-sm font-bold text-blue-700 uppercase tracking-wider"
+                  >
+                    Resume Content
+                  </label>
+                  <button 
+                    onClick={handleClear}
+                    className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-fm-violet transition-colors flex items-center gap-1"
+                  >
+                    <X size={12} />
+                    Clear All
+                  </button>
+                </div>
                 <textarea
                   id="resume-reviser-text"
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   placeholder="Paste your resume here..."
-                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-fm-violet focus:ring-0 transition-all resize-none font-sans text-blue-700"
+                  className="w-full h-64 p-4 rounded-2xl border-2 border-blue-100 focus:border-fm-violet focus:ring-0 transition-all resize-none font-sans text-blue-700 shadow-inner"
                 />
               </div>
+
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100 opacity-50">
+                <div className="w-10 h-10 bg-fm-violet text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                <div>
+                  <h3 className="font-bold text-blue-900">Optimize Resume</h3>
+                  <p className="text-xs text-blue-500">AI will rewrite your resume to highlight matching skills.</p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 text-red-600">
+                  <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              )}
+
               <button
                 onClick={handleRevise}
                 disabled={loading || !resumeText.trim()}
@@ -2144,12 +2305,21 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
                 </div>
               </div>
 
-              <button
-                onClick={() => setRevised(null)}
-                className="w-full py-4 border-2 border-blue-200 text-blue-500 rounded-2xl font-bold hover:bg-blue-50 transition-all"
-              >
-                Start Over with New Details
-              </button>
+              <div className="pt-10 border-t border-blue-100 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleStartOver}
+                  className="flex-1 py-4 bg-white border-2 border-blue-100 text-fm-violet rounded-2xl font-bold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft size={20} />
+                  Start Over
+                </button>
+                <button
+                  onClick={onBack}
+                  className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all"
+                >
+                  Back to Jobs
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -2484,6 +2654,107 @@ const PlatformSuccessStories = () => (
   </section>
 );
 
+
+const AICareerScout = () => {
+  const [messages, setMessages] = useState<ScoutMessage[]>([
+    { role: 'assistant', content: "Hello! I'm your AI Career Scout. I can help you find current job trends, company news, and career advice using real-time search. What would you like to know today?" }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+    
+    const userMsg: ScoutMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const assistantMsg = await chatWithScout([...messages, userMsg]);
+      setMessages(prev => [...prev, assistantMsg]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error while searching. Please try again." }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="py-12 px-8 bg-fm-deep rounded-[3rem] text-white overflow-hidden relative min-h-[600px] flex flex-col">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-fm-blue/20 rounded-full blur-[120px] -mr-48 -mt-48" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-fm-violet/20 rounded-full blur-[120px] -ml-48 -mb-48" />
+      
+      <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col h-full flex-1">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/10 mb-4">
+            <Globe className="text-fm-blue" size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time Search Assistant</span>
+          </div>
+          <h2 className="text-4xl font-serif font-bold">AI Career <span className="text-fm-blue">Scout</span></h2>
+          <p className="text-slate-400 mt-2">Powered by Gemini with Google Search Grounding</p>
+        </div>
+
+        <div className="flex-1 bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/10 p-6 overflow-y-auto mb-6 space-y-6 max-h-[500px] scrollbar-hide">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-5 rounded-3xl ${msg.role === 'user' ? 'bg-fm-blue text-white' : 'bg-white/10 text-slate-200 border border-white/10'}`}>
+                <div className="prose prose-invert prose-sm">
+                  <Markdown>{msg.content}</Markdown>
+                </div>
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Sources</p>
+                    <div className="flex flex-wrap gap-2">
+                      {msg.sources.map((source, si) => (
+                        <a 
+                          key={si} 
+                          href={source.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-lg text-[10px] hover:bg-white/10 transition-colors border border-white/5"
+                        >
+                          <ExternalLink size={10} /> {source.title}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-white/10 p-5 rounded-3xl border border-white/10 flex items-center gap-3">
+                <Loader2 className="animate-spin text-fm-blue" size={20} />
+                <span className="text-sm text-slate-400 italic">Scouting the web...</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <input 
+            type="text" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask about job trends, companies, or career advice..."
+            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-8 pr-20 text-white placeholder:text-slate-500 focus:ring-4 focus:ring-fm-blue/20 outline-none transition-all"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-fm-blue text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send size={20} />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const FeedbackSection = () => {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '', allowContact: false });
@@ -2611,7 +2882,7 @@ export default function App() {
   const [view, setView] = useState<'home' | 'comparison' | 'resume-matcher' | 'resume-reviser' | 'interview-prep' | 'cover-letter' | 'reskilling'>('home');
   const [matchingJob, setMatchingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState('');
-  const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling'>('start');
+  const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'scout'>('start');
 
   const fetchJobs = async (query?: string) => {
     setLoading(true);
@@ -2728,6 +2999,14 @@ export default function App() {
                 Reskilling
                 <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'reskilling' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
               </button>
+              <button 
+                onClick={() => { setView('home'); setHomeTab('scout'); }} 
+                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'scout' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+                aria-current={view === 'home' && homeTab === 'scout' ? 'page' : undefined}
+              >
+                AI Career Scout
+                <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'scout' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
+              </button>
             </nav>
           </div>
 
@@ -2750,25 +3029,29 @@ export default function App() {
           <CoverLetterDrafter job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
         ) : view === 'home' ? (
           <>
-            <LandingSection />
-            
-            <QuickStartGuide 
-              onStart={() => {
-                setHomeTab('start');
-                setTimeout(() => {
-                  const el = document.getElementById('portal-content-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }} 
-              onSetTab={(tab) => {
-                setHomeTab(tab);
-                setTimeout(() => {
-                  const el = document.getElementById('portal-content-section');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              onSetView={setView}
-            />
+            {homeTab === 'start' && (
+              <>
+                <LandingSection />
+                
+                <QuickStartGuide 
+                  onStart={() => {
+                    setHomeTab('start');
+                    setTimeout(() => {
+                      const el = document.getElementById('portal-content-section');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }} 
+                  onSetTab={(tab) => {
+                    setHomeTab(tab);
+                    setTimeout(() => {
+                      const el = document.getElementById('portal-content-section');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  onSetView={setView}
+                />
+              </>
+            )}
 
             <div id="portal-content-section" className="scroll-mt-20">
               <AnimatePresence mode="wait">
@@ -3031,13 +3314,25 @@ export default function App() {
                   <ReskillingView />
                 </motion.div>
               )}
+
+              {homeTab === 'scout' && (
+                <motion.div
+                  key="scout"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AICareerScout />
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </>
         ) : (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-slate-900 tracking-tighter">Job Comparison</h2>
+              <h2 className="text-3xl font-bold text-slate-800 tracking-tighter">Job Comparison</h2>
               <button onClick={() => setView('home')} className="text-slate-400 hover:text-fm-blue text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all">
                 <ArrowLeft size={14} />
                 Back Home
@@ -3058,7 +3353,7 @@ export default function App() {
           <div className="max-w-sm">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-8 h-8 bg-fm-blue rounded-xl flex items-center justify-center text-white font-bold text-sm">F.</div>
-              <span className="text-slate-900 font-bold text-xl tracking-tighter">Forward Moves</span>
+              <span className="text-slate-800 font-bold text-xl tracking-tighter">Forward Moves</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed font-light">
               Empowering job seekers nationwide with AI-driven insights and curated career resources.
@@ -3067,7 +3362,7 @@ export default function App() {
           
           <div className="grid grid-cols-2 gap-20">
             <div>
-              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-8">Technology</h4>
+              <h4 className="text-[10px] font-bold text-slate-800 uppercase tracking-[0.2em] mb-8">Technology</h4>
               <ul className="space-y-4">
                 <li className="text-slate-400 text-xs font-light">Google Search</li>
                 <li className="text-slate-400 text-xs font-light">Gemini 3.1 Flash</li>
