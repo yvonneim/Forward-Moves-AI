@@ -810,6 +810,7 @@ const JobCard = ({
           <button 
             onClick={() => onMatch(job)}
             aria-label={`Match resume to ${job.title}`}
+            title="Compare your resume against the job description to see your compatibility score and keyword gaps."
             className="flex items-center justify-center gap-2 py-3 bg-fm-blue text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
           >
             <Zap size={14} /> Match
@@ -817,6 +818,7 @@ const JobCard = ({
           <button 
             onClick={() => onRevise(job)}
             aria-label={`Revise resume for ${job.title}`}
+            title="Automatically optimize your resume bullet points to better align with this specific role's requirements."
             className="flex items-center justify-center gap-2 py-3 bg-violet-50 text-fm-violet rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-violet-100 transition-all border border-violet-100"
           >
             <PenTool size={14} /> Revise
@@ -826,6 +828,7 @@ const JobCard = ({
           <button 
             onClick={() => onLetter(job)}
             aria-label={`Draft cover letter for ${job.title}`}
+            title="Generate a tailored cover letter that highlights your most relevant experiences for this position."
             className="flex items-center justify-center gap-2 py-3 bg-teal-50 text-teal-700 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-teal-100 transition-all border border-teal-100"
           >
             Letter
@@ -833,6 +836,7 @@ const JobCard = ({
           <button 
             onClick={() => onPrep(job)}
             aria-label={`Get interview tips for ${job.title}`}
+            title="Get AI-generated practice questions and strategic advice based on the job's core competencies."
             className="flex items-center justify-center gap-2 py-3 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
           >
             Interview Tips
@@ -840,6 +844,7 @@ const JobCard = ({
           <button 
             onClick={() => onSWOT(job)}
             aria-label={`SWOT analysis for ${job.title}`}
+            title="Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job."
             className="flex items-center justify-center gap-2 py-3 bg-blue-50 text-fm-blue rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100"
           >
             SWOT Analysis
@@ -2903,6 +2908,24 @@ export default function App() {
                           Search
                         </button>
                       </div>
+                    </div>
+
+                    {/* Tool Descriptions */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
+                      {[
+                        { label: 'Match', color: 'bg-fm-blue/10 text-fm-blue', desc: 'Compare your resume against the job description to see your compatibility score and keyword gaps.' },
+                        { label: 'Revise', color: 'bg-fm-violet/10 text-fm-violet', desc: 'Automatically optimize your resume bullet points to better align with this specific role\'s requirements.' },
+                        { label: 'Letter', color: 'bg-teal-50 text-teal-700', desc: 'Generate a tailored cover letter that highlights your most relevant experiences for this position.' },
+                        { label: 'Interview Tips', color: 'bg-indigo-50 text-indigo-700', desc: 'Get AI-generated practice questions and strategic advice based on the job\'s core competencies.' },
+                        { label: 'SWOT Analysis', color: 'bg-blue-50 text-fm-blue', desc: 'Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job.' }
+                      ].map((tool, i) => (
+                        <div key={i} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                          <div className={`inline-block px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest mb-2 ${tool.color}`}>
+                            {tool.label}
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-relaxed">{tool.desc}</p>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
