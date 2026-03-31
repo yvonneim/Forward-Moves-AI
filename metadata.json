@@ -1,5 +1,9 @@
 {
-  "name": "Forward Moves USA",
-  "description": "A national AI-powered career platform for job discovery, resume matching, and interview preparation, supporting professionals across the USA.",
-  "requestFramePermissions": []
+  "name": "Forward Moves: AI Career Scout",
+  "description": "An AI-powered career transition platform featuring resume optimization, interview prep, and job market analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
 }

@@ -40,6 +40,32 @@ export const generateInterviewPrep = async (job: Job): Promise<InterviewPrep> =>
   return JSON.parse(response.text);
 };
 
+export const getInterviewFeedback = async (question: string, answer: string, job: Job): Promise<{ feedback: string; score: number; suggestions: string[] }> => {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: `Evaluate the following interview answer for the role of "${job.title}" at "${job.company}".
+    
+    Question: ${question}
+    User Answer: ${answer}
+    
+    Provide constructive feedback, a score from 0-100, and 3 specific suggestions for improvement.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          feedback: { type: Type.STRING },
+          score: { type: Type.NUMBER },
+          suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+        },
+        required: ["feedback", "score", "suggestions"],
+      },
+    },
+  });
+
+  return JSON.parse(response.text);
+};
+
 export const generateCoverLetter = async (resumeText: string, job: Job): Promise<CoverLetter> => {
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
