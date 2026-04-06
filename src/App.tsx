@@ -11,6 +11,7 @@ import {
   CheckCircle,
   ArrowRight,
   Loader2,
+  Menu,
   X,
   Plus,
   Minus,
@@ -34,7 +35,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, SWOTAnalysis, ResumeMatch, InterviewPrep, CoverLetter, RevisedResume } from './types';
 import { searchJobs, generateSWOT } from './services/jobService';
-import { matchResumeToJob, reviseResume } from './services/resumeService';
+import { matchResumeToJob, reviseResume, generateMarketMatchSummary } from './services/resumeService';
 import { generateInterviewPrep, generateCoverLetter, getInterviewFeedback } from './services/applicationService';
 import { chatWithScout, ScoutMessage } from './services/scoutService';
 import Markdown from 'react-markdown';
@@ -62,8 +63,8 @@ import {
   Cell
 } from 'recharts';
 
-const LandingSection = () => (
-  <div className="relative min-h-[450px] flex items-center justify-center rounded-[3rem] overflow-hidden mb-12 bg-white">
+const LandingSection = ({ onStart }: { onStart: () => void }) => (
+  <div className="relative min-h-[450px] md:min-h-[600px] flex items-center justify-center rounded-[3rem] overflow-hidden mb-12 bg-white border border-slate-100 shadow-sm">
     <div className="absolute inset-0">
       <img 
         src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2070" 
@@ -78,25 +79,35 @@ const LandingSection = () => (
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-      className="relative z-10 p-8 md:p-12 max-w-5xl text-center"
+      className="relative z-10 p-6 md:p-12 max-w-5xl text-center"
     >
-      <div className="flex flex-col items-center gap-4 mb-8">
-        <span className="inline-block px-5 py-1.5 bg-slate-50 text-slate-400 text-[9px] font-bold uppercase tracking-[0.5em] rounded-full border border-slate-100">
+      <div className="flex flex-col items-center gap-4 mb-6 md:mb-8">
+        <span className="inline-block px-4 py-1.5 bg-slate-100 text-slate-700 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] rounded-full border border-slate-200">
           Forward Moves USA
         </span>
       </div>
       
-      <h2 className="text-5xl md:text-7xl font-bold text-slate-800 mb-8 leading-[0.9] tracking-tighter">
+      <h2 className="text-4xl md:text-7xl font-bold text-slate-900 mb-6 md:mb-8 leading-[1.1] md:leading-[0.9] tracking-tighter">
         Step Into Your <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-fm-blue to-fm-violet">
           AI-Driven Future.
         </span>
       </h2>
       
-      <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+      <p className="text-base md:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed font-normal mb-10">
         Your bridge to a more fulfilling career. We connect your unique 
         talents to the most exciting opportunities in the AI-driven workforce.
       </p>
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button 
+          onClick={onStart}
+          className="w-full sm:w-auto px-8 py-4 bg-fm-blue text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-fm-blue/20 flex items-center justify-center gap-2"
+        >
+          Get Started
+          <ArrowRight size={20} />
+        </button>
+      </div>
     </motion.div>
   </div>
 );
@@ -108,7 +119,7 @@ const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void
         <Compass size={32} />
       </div>
       <h2 className="text-5xl font-bold text-slate-900 tracking-tighter mb-4">Explore What's Inside</h2>
-      <p className="text-slate-400 text-xl max-w-2xl font-light leading-relaxed">Your gateway to the AI-driven workforce. Select a path to begin your journey.</p>
+      <p className="text-slate-700 text-xl max-w-2xl font-normal leading-relaxed">Your gateway to the AI-driven workforce. Select a path to begin your journey.</p>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -152,9 +163,9 @@ const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void
             {item.icon}
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">{item.title}</h3>
-          <p className="text-slate-500 leading-relaxed">{item.desc}</p>
+          <p className="text-slate-700 leading-relaxed font-medium">{item.desc}</p>
           
-          <div className="mt-8 flex items-center gap-2 text-fm-violet font-bold text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+          <div className="mt-8 flex items-center gap-2 text-fm-violet font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
             Enter Portal <ArrowRight size={14} />
           </div>
         </motion.div>
@@ -172,19 +183,19 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
   
   if (!isEditing && currentResume) {
     return (
-      <div className="glass-panel p-8 bg-emerald-50 border-emerald-100 shadow-lg mb-16 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-            <CheckCircle size={28} />
+      <div className="glass-panel p-4 md:p-8 bg-emerald-50 border-emerald-100 shadow-lg mb-16 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+            <CheckCircle size={24} className="md:w-7 md:h-7" />
           </div>
           <div>
-            <h2 className="text-2xl font-serif font-bold text-slate-900">Resume Active</h2>
-            <p className="text-slate-500">Your baseline is set. You can now match against any job listing in the "Discover" tab.</p>
+            <h2 className="text-xl md:text-2xl font-serif font-bold text-slate-900">Resume Active</h2>
+            <p className="text-slate-700 font-medium text-sm md:text-base">Your baseline is set. You can now match against any job listing in the "Discover" tab.</p>
           </div>
         </div>
         <button 
           onClick={() => setIsEditing(true)}
-          className="px-6 py-3 bg-white text-emerald-600 border border-emerald-200 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-all flex items-center gap-2 shadow-sm"
+          className="w-full md:w-auto px-6 py-3 bg-white text-emerald-600 border border-emerald-200 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm"
         >
           <FileText size={18} />
           Update Resume
@@ -194,19 +205,19 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
   }
 
   return (
-    <div id="resume-upload-section" className="glass-panel p-10 bg-gradient-to-br from-fm-blue/5 to-fm-violet/5 border-fm-blue/20 shadow-2xl mb-16 relative overflow-hidden scroll-mt-24">
+    <div id="resume-upload-section" className="glass-panel p-6 md:p-10 bg-gradient-to-br from-fm-blue/5 to-fm-violet/5 border-fm-blue/20 shadow-2xl mb-16 relative overflow-hidden scroll-mt-24">
       <div className="absolute top-0 right-0 p-4">
         <div className="w-24 h-24 bg-fm-blue/10 rounded-full blur-3xl" />
       </div>
       
       <div className="relative z-10">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 bg-fm-blue rounded-2xl flex items-center justify-center text-white shadow-lg">
-            <FileText size={28} />
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 text-center md:text-left">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-fm-blue rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+            <FileText size={24} className="md:w-7 md:h-7" />
           </div>
           <div>
-            <h2 className="text-3xl font-serif font-bold text-slate-900">Step 1: Set Your Baseline</h2>
-            <p className="text-slate-500">Upload your current resume text to unlock personalized matching and analysis.</p>
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">Step 1: Set Your Baseline</h2>
+            <p className="text-slate-600 font-medium text-sm md:text-base">Upload your current resume text to unlock personalized matching and analysis.</p>
           </div>
         </div>
 
@@ -266,7 +277,7 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
 
           <div className="space-y-6">
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+              <label className="block text-sm font-bold text-slate-600 uppercase tracking-widest mb-3">
                 Resume Text Content
               </label>
               <textarea
@@ -277,22 +288,22 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
               />
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               <button
                 onClick={() => {
                   onSet(text);
                   setIsEditing(false);
                 }}
                 disabled={!text.trim() || !agreedToPrivacy}
-                className="flex-1 py-4 bg-fm-blue text-white rounded-2xl font-bold text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-xl shadow-fm-blue/20"
+                className="w-full sm:flex-1 py-4 bg-fm-blue text-white rounded-2xl font-bold text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-xl shadow-fm-blue/20"
               >
                 <CheckCircle size={24} />
-                Save & Start Discovering
+                Save & Start
               </button>
               {currentResume && (
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:text-fm-blue transition-all"
+                  className="w-full sm:w-auto px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:text-fm-blue transition-all"
                 >
                   Cancel
                 </button>
@@ -359,13 +370,13 @@ const SkillGapAnalyzer = ({ resumeText, jobs }: { resumeText: string; jobs: Job[
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-6">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Top Skills in Current Market</h3>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-600">Top Skills in Current Market</h3>
           <div className="space-y-4">
             {skillStats.map((skill, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-bold text-slate-700">{skill.name}</span>
-                  <span className="text-slate-400">{Math.round((skill.count / jobs.length) * 100)}% of jobs</span>
+                  <span className="text-slate-600 font-medium">{Math.round((skill.count / jobs.length) * 100)}% of jobs</span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
                   <div 
@@ -462,7 +473,7 @@ const MarketTrendTracker = ({ jobs }: { jobs: Job[] }) => {
             <Globe className="text-fm-blue" size={24} />
             Geographic Hotspots
           </h2>
-          <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">Top Hiring Cities</span>
+          <span className="text-xs font-mono text-slate-600 uppercase tracking-widest font-bold">Top Hiring Cities</span>
         </div>
         <div className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -576,94 +587,15 @@ const LabPhilosophy = () => (
   </div>
 );
 
-const SuccessStories = () => (
-  <div className="space-y-8 mb-16">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-fm-violet/10 rounded-2xl flex items-center justify-center text-fm-violet">
-          <Award size={24} />
-        </div>
-        <h2 className="text-3xl font-serif font-bold text-slate-900">AI Career Pitch Lab: <span className="italic text-fm-violet">Success Stories</span></h2>
-      </div>
-      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Ideal Outputs from Gemini</span>
-    </div>
-    
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Step 1 */}
-      <div className="glass-panel p-8 bg-white border-slate-200 shadow-md flex flex-col">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-fm-blue/10 rounded-xl flex items-center justify-center text-fm-blue font-bold">1</div>
-          <h3 className="font-bold text-slate-900">The Structure</h3>
-        </div>
-        <div className="space-y-4 flex-1">
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-fm-violet mb-2">Evolution Narrative</h4>
-            <p className="text-sm text-slate-600">Focuses on how a role has changed over 20 years and why AI is the natural "next tool".</p>
-          </div>
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-fm-violet mb-2">Human + AI Partnership</h4>
-            <p className="text-sm text-slate-600">Highlights tasks AI cannot do (empathy) vs. what it can do (data synthesis).</p>
-          </div>
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-fm-violet mb-2">The Skills Bridge</h4>
-            <p className="text-sm text-slate-600">Directly maps traditional skills to their AI counterparts (Prompt Engineering).</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Step 2 */}
-      <div className="glass-panel p-8 bg-white border-slate-200 shadow-md flex flex-col">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-fm-blue/10 rounded-xl flex items-center justify-center text-fm-blue font-bold">2</div>
-          <h3 className="font-bold text-slate-900">The Hook</h3>
-        </div>
-        <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 italic text-indigo-900 leading-relaxed text-sm flex-1">
-          "A surprising and powerful statistic for 2026 is that the demand for AI literacy in non-technical roles has surged by 70% year-over-year. Even more striking, 51% of all job postings requiring AI skills are now outside of IT and Computer Science. This means the 'AI Revolution' isn't just for coders—it's for everyone in the office."
-        </div>
-        <div className="mt-6 rounded-xl overflow-hidden h-32">
-          <img 
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070" 
-            alt="Data visualization" 
-            className="w-full h-full object-cover opacity-60"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-      </div>
-
-      {/* Step 3 */}
-      <div className="glass-panel p-8 bg-white border-slate-200 shadow-md flex flex-col">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-fm-blue/10 rounded-xl flex items-center justify-center text-fm-blue font-bold">3</div>
-          <h3 className="font-bold text-slate-900">The Pitch</h3>
-        </div>
-        <div className="space-y-4 flex-1">
-          <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-2">Option 1: Inspiring</h4>
-            <p className="text-sm text-emerald-900 line-clamp-3">"We’ve all heard the headlines about AI replacing jobs, but the data tells a much more exciting story..."</p>
-          </div>
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-2">Option 2: Analytical</h4>
-            <p className="text-sm text-blue-900 line-clamp-3">"As of 2026, the US labor market has reached a critical tipping point..."</p>
-          </div>
-          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2">Option 3: Modern</h4>
-            <p className="text-sm text-amber-900 line-clamp-3">"The 'AI Gap' is closing, and it’s closing in favor of the non-technical professional..."</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 const FutureOutlook = () => (
   <div className="space-y-12 mb-20">
     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
       <div className="max-w-2xl">
-        <span className="inline-block px-4 py-1.5 bg-fm-blue/10 text-fm-blue text-[10px] font-bold uppercase tracking-[0.3em] rounded-full mb-4">
+        <span className="inline-block px-4 py-1.5 bg-fm-blue/10 text-fm-blue text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-4">
           2026 Career Map
         </span>
         <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Future-Proofing Your <span className="text-fm-violet italic">Next Decade.</span></h2>
-        <p className="text-slate-500 text-lg">The landscape is shifting. Here are the roles, skills, and tools that will define the professional world in 2026 and beyond.</p>
+        <p className="text-slate-700 text-lg font-medium">The landscape is shifting. Here are the roles, skills, and tools that will define the professional world in 2026 and beyond.</p>
       </div>
       <div className="flex items-center gap-2 text-fm-blue font-bold text-sm bg-fm-blue/5 px-4 py-2 rounded-xl border border-fm-blue/10">
         <Sparkles size={18} />
@@ -764,7 +696,8 @@ const JobCard = ({
   onSWOT,
   onRevise,
   onLetter,
-  onPrep
+  onPrep,
+  isRecommended
 }: { 
   job: Job; 
   onMatch: (job: Job) => void; 
@@ -774,9 +707,18 @@ const JobCard = ({
   onRevise: (job: Job) => void;
   onLetter: (job: Job) => void;
   onPrep: (job: Job) => void;
+  isRecommended?: boolean;
 }) => (
-  <div className="glass-panel p-8 hover:bg-blue-50 hover:shadow-xl hover:border-blue-100 transition-all border-slate-200 group relative overflow-hidden flex flex-col h-full bg-white shadow-sm">
+  <div className={`glass-panel p-8 hover:bg-blue-50 hover:shadow-xl hover:border-blue-100 transition-all border-slate-200 group relative overflow-hidden flex flex-col h-full bg-white shadow-sm ${isRecommended ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}`}>
     <div className="absolute top-0 right-0 w-32 h-32 bg-fm-blue/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform" />
+    
+    {isRecommended && (
+      <div className="absolute top-4 left-4 z-20">
+        <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-lg flex items-center gap-1">
+          <Sparkles size={10} /> Top Match
+        </span>
+      </div>
+    )}
     
     <div className="relative z-10 flex flex-col h-full">
         <div className="flex justify-between items-start mb-6">
@@ -784,7 +726,7 @@ const JobCard = ({
             <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 group-hover:text-fm-blue transition-colors line-clamp-2">{job.title}</h3>
             <div className="flex flex-col gap-1">
               <span className="font-bold text-fm-violet text-lg">{job.company}</span>
-              <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
+              <div className="flex items-center gap-4 text-slate-600 text-sm font-bold">
                 <span className="flex items-center gap-1"><MapPin size={14} /> {job.location}</span>
                 <span className="flex items-center gap-1"><DollarSign size={14} /> {job.salary}</span>
               </div>
@@ -794,12 +736,12 @@ const JobCard = ({
             <button 
               onClick={() => onCompare(job)}
               aria-label={isSelected ? "Remove from comparison" : "Add to comparison"}
-              className={`p-3 rounded-xl border transition-all flex-shrink-0 ${isSelected ? 'bg-fm-blue text-white border-fm-blue shadow-md' : 'bg-white text-slate-300 border-slate-100 hover:border-fm-blue hover:text-fm-blue'}`}
+              className={`p-3 rounded-xl border transition-all flex-shrink-0 ${isSelected ? 'bg-fm-blue text-white border-fm-blue shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-fm-blue hover:text-fm-blue'}`}
               title={isSelected ? "Remove from comparison" : "Add to comparison"}
             >
               <TableIcon size={20} />
             </button>
-            <span className={`text-[8px] font-bold uppercase tracking-widest ${isSelected ? 'text-fm-blue' : 'text-slate-300'}`}>
+            <span className={`text-xs font-bold uppercase tracking-widest ${isSelected ? 'text-fm-blue' : 'text-slate-500'}`}>
               {isSelected ? 'Added' : 'Compare'}
             </span>
           </div>
@@ -807,7 +749,7 @@ const JobCard = ({
 
       <div className="flex flex-wrap gap-2 mb-8">
         {job.techStack.slice(0, 4).map((tag, i) => (
-          <span key={i} className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-slate-100">
+          <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-widest rounded-lg border border-slate-200">
             {tag}
           </span>
         ))}
@@ -819,7 +761,7 @@ const JobCard = ({
             onClick={() => onMatch(job)}
             aria-label={`Match resume to ${job.title}`}
             title="Compare your resume against the job description to see your compatibility score and keyword gaps."
-            className="flex items-center justify-center gap-2 py-3 bg-fm-blue text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
+            className="flex items-center justify-center gap-2 py-3 bg-fm-blue text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
           >
             <Zap size={14} /> Match
           </button>
@@ -827,7 +769,7 @@ const JobCard = ({
             onClick={() => onRevise(job)}
             aria-label={`Revise resume for ${job.title}`}
             title="Automatically optimize your resume bullet points to better align with this specific role's requirements."
-            className="flex items-center justify-center gap-2 py-3 bg-violet-50 text-fm-violet rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-violet-100 transition-all border border-violet-100"
+            className="flex items-center justify-center gap-2 py-3 bg-violet-100 text-fm-violet rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-violet-200 transition-all border border-violet-200"
           >
             <PenTool size={14} /> Revise
           </button>
@@ -837,7 +779,7 @@ const JobCard = ({
             onClick={() => onLetter(job)}
             aria-label={`Draft cover letter for ${job.title}`}
             title="Generate a tailored cover letter that highlights your most relevant experiences for this position."
-            className="flex items-center justify-center gap-2 py-3 bg-teal-50 text-teal-700 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-teal-100 transition-all border border-teal-100"
+            className="flex items-center justify-center gap-2 py-3 bg-teal-100 text-teal-800 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-teal-200 transition-all border border-teal-200"
           >
             Letter
           </button>
@@ -845,7 +787,7 @@ const JobCard = ({
             onClick={() => onPrep(job)}
             aria-label={`Get interview tips for ${job.title}`}
             title="Get AI-generated practice questions and strategic advice based on the job's core competencies."
-            className="flex items-center justify-center gap-2 py-3 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+            className="flex items-center justify-center gap-2 py-3 bg-indigo-100 text-indigo-800 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-200 transition-all border border-indigo-200"
           >
             Interview Tips
           </button>
@@ -869,7 +811,7 @@ const JobCard = ({
         >
           Career Site <ExternalLink size={12} />
         </a>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Posted {job.postedDate}</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-slate-600">Posted {job.postedDate}</span>
       </div>
     </div>
   </div>
@@ -895,9 +837,9 @@ const MockInterview = ({ job, question, onBack }: { job: Job; question: string; 
 
   return (
     <div className="space-y-8">
-      <div className="p-8 bg-indigo-50 rounded-[2rem] border border-indigo-100 shadow-sm">
-        <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-[0.2em] mb-4">Question</h4>
-        <p className="text-2xl font-bold text-indigo-900 leading-tight">{question}</p>
+      <div className="p-6 md:p-8 bg-indigo-50 rounded-[2rem] border border-indigo-100 shadow-sm">
+        <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4">Question</h4>
+        <p className="text-xl md:text-2xl font-bold text-indigo-900 leading-tight">{question}</p>
       </div>
 
       {!feedback ? (
@@ -917,17 +859,17 @@ const MockInterview = ({ job, question, onBack }: { job: Job; question: string; 
               className="w-full h-48 p-4 rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 focus:ring-0 transition-all resize-none font-sans text-indigo-700"
             />
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleSubmit}
               disabled={loading || !answer.trim()}
               aria-live="polite"
-              className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-200"
+              className="w-full sm:flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-200"
             >
               {loading ? (
                 <>
                   <Loader2 className="animate-spin" size={24} />
-                  Analyzing Your Answer...
+                  Analyzing...
                 </>
               ) : (
                 <>
@@ -938,7 +880,7 @@ const MockInterview = ({ job, question, onBack }: { job: Job; question: string; 
             </button>
             <button
               onClick={onBack}
-              className="px-8 py-4 border-2 border-indigo-100 text-indigo-400 rounded-2xl font-bold hover:bg-indigo-50 transition-all"
+              className="w-full sm:w-auto px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-lg hover:bg-blue-50 hover:text-fm-blue transition-all"
             >
               Cancel
             </button>
@@ -1029,21 +971,21 @@ const InterviewPrepView = ({ job, onBack }: { job: Job; onBack: () => void }) =>
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
+        className="flex items-center gap-2 text-slate-600 hover:text-fm-blue transition-all mb-10 text-xs font-bold uppercase tracking-[0.2em]"
       >
         <ArrowLeft size={16} />
         Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
-        <div className="p-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+        <div className="p-6 md:p-10 bg-gradient-to-br from-indigo-600 to-violet-700 text-white">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-4 text-center md:text-left">
+            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md shrink-0">
               <MessageSquare size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold">Interview Preparation</h2>
-              <p className="text-indigo-100">
+              <h2 className="text-2xl md:text-3xl font-bold">Interview Preparation</h2>
+              <p className="text-indigo-100 text-sm md:text-base">
                 Strategic guide for {job.title} at{' '}
                 <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   {job.company}
@@ -1053,11 +995,11 @@ const InterviewPrepView = ({ job, onBack }: { job: Job; onBack: () => void }) =>
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-10">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-4">
               <Loader2 className="animate-spin text-indigo-600" size={48} />
-              <p className="text-blue-500 font-medium">Generating your interview strategy...</p>
+              <p className="text-blue-600 font-medium">Generating your interview strategy...</p>
             </div>
           ) : practiceQuestion ? (
             <MockInterview 
@@ -1068,16 +1010,16 @@ const InterviewPrepView = ({ job, onBack }: { job: Job; onBack: () => void }) =>
           ) : prep ? (
             <div className="space-y-12">
               <section>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                   <h3 className="text-xl font-bold text-indigo-900 flex items-center gap-2">
                     <TrendingUp className="text-indigo-600" size={24} />
                     Top Interview Questions
                   </h3>
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Click a question to practice</span>
+                  <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Click a question to practice</span>
                 </div>
                 <div className="space-y-8">
                   {prep.questions.map((q, i) => (
-                    <div key={i} className="p-8 rounded-[2rem] bg-blue-50 border border-blue-100 shadow-sm group hover:border-indigo-300 transition-all cursor-pointer" onClick={() => setPracticeQuestion(q.question)}>
+                    <div key={i} className="p-6 md:p-8 rounded-[2rem] bg-blue-50 border border-blue-100 shadow-sm group hover:border-indigo-300 transition-all cursor-pointer" onClick={() => setPracticeQuestion(q.question)}>
                       <div className="flex gap-6 mb-6">
                         <div className="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
                           {i + 1}
@@ -1180,21 +1122,21 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
+        className="flex items-center gap-2 text-slate-600 hover:text-fm-blue transition-all mb-10 text-xs font-bold uppercase tracking-[0.2em]"
       >
         <ArrowLeft size={16} />
         Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
-        <div className="p-8 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+        <div className="p-6 md:p-10 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-4 text-center md:text-left">
+            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md shrink-0">
               <PenTool size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold">Cover Letter Drafter</h2>
-              <p className="text-emerald-100">
+              <h2 className="text-2xl md:text-3xl font-bold">Cover Letter Drafter</h2>
+              <p className="text-emerald-100 text-sm md:text-base">
                 Personalized pitch for {job.title} at{' '}
                 <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   {job.company}
@@ -1204,14 +1146,14 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-10">
           {!coverLetter ? (
             <div className="space-y-8">
               <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
                 <div className="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
                 <div>
                   <h3 className="font-bold text-emerald-900">Paste Your Resume</h3>
-                  <p className="text-xs text-emerald-500">We'll use your experience to draft a custom pitch.</p>
+                  <p className="text-xs text-emerald-600">We'll use your experience to draft a custom pitch.</p>
                 </div>
               </div>
 
@@ -1222,7 +1164,7 @@ const CoverLetterDrafter = ({ job, onBack, initialResumeText }: { job: Job; onBa
                   </label>
                   <button 
                     onClick={handleClear}
-                    className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center gap-1"
+                    className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center gap-1"
                   >
                     <X size={12} />
                     Clear All
@@ -1353,21 +1295,21 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
       <button 
         onClick={onBack}
         aria-label="Go back to home page"
-        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
+        className="flex items-center gap-2 text-slate-600 hover:text-fm-blue transition-all mb-10 text-xs font-bold uppercase tracking-[0.2em]"
       >
         <ArrowLeft size={16} />
         Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
-        <div className="p-8 bg-gradient-to-br from-fm-blue to-blue-800 text-white">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+        <div className="p-6 md:p-10 bg-gradient-to-br from-fm-blue to-blue-800 text-white">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-4 text-center md:text-left">
+            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md shrink-0">
               <FileText size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold">Resume Matcher</h2>
-              <p className="text-blue-100">
+              <h2 className="text-2xl md:text-3xl font-bold">Resume Matcher</h2>
+              <p className="text-blue-100 text-sm md:text-base">
                 Analyzing fit for {job.title} at{' '}
                 <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   {job.company}
@@ -1377,7 +1319,7 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-10">
           {!match ? (
             <div className="space-y-8">
               <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
@@ -1398,7 +1340,7 @@ const ResumeMatcher = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
                   </label>
                   <button 
                     onClick={handleClear}
-                    className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-fm-blue transition-colors flex items-center gap-1"
+                    className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:text-fm-blue transition-colors flex items-center gap-1"
                   >
                     <X size={12} />
                     Clear All
@@ -1862,7 +1804,7 @@ const ReskillingView = () => {
 
           <div className="lg:w-3/4 bg-white rounded-[2.5rem] p-10 shadow-xl border border-blue-100">
             <div className="mb-10 pb-10 border-b border-slate-50">
-              <p className="text-slate-400 font-light italic">
+              <p className="text-slate-600 font-medium italic">
                 {CATEGORIES.find(c => c.id === activeCategory)?.d}
               </p>
             </div>
@@ -1930,7 +1872,7 @@ const LinkedInFlyer = ({ onBack }: { onBack: () => void }) => {
     >
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
+        className="flex items-center gap-2 text-slate-600 hover:text-fm-blue transition-all mb-10 text-xs font-bold uppercase tracking-[0.2em]"
       >
         <ArrowLeft size={16} />
         Back Home
@@ -2054,7 +1996,7 @@ const LinkedInFlyer = ({ onBack }: { onBack: () => void }) => {
             <div className="px-8 py-4 bg-white text-fm-blue border border-slate-200 rounded-2xl font-bold text-base shadow-sm">
               #AI #CareerGrowth #TechJobs
             </div>
-            <div className="px-8 py-4 border border-slate-200 rounded-2xl font-bold text-base text-slate-400">
+            <div className="px-8 py-4 border border-slate-200 rounded-2xl font-bold text-base text-slate-600">
               USA 2026
             </div>
           </div>
@@ -2139,21 +2081,21 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
       <button 
         onClick={onBack}
         aria-label="Go back to home page"
-        className="flex items-center gap-2 text-slate-400 hover:text-fm-blue transition-all mb-10 text-[10px] font-bold uppercase tracking-[0.2em]"
+        className="flex items-center gap-2 text-slate-600 hover:text-fm-blue transition-all mb-10 text-xs font-bold uppercase tracking-[0.2em]"
       >
         <ArrowLeft size={16} />
         Back Home
       </button>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
-        <div className="p-8 bg-gradient-to-br from-fm-blue to-indigo-600 text-white">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+        <div className="p-6 md:p-10 bg-gradient-to-br from-fm-blue to-indigo-600 text-white">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-4 text-center md:text-left">
+            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md shrink-0">
               <Zap size={32} />
             </div>
             <div>
-              <h2 className="text-3xl font-bold">AI Resume Reviser</h2>
-              <p className="text-blue-50">
+              <h2 className="text-2xl md:text-3xl font-bold">AI Resume Reviser</h2>
+              <p className="text-blue-50 text-sm md:text-base">
                 Optimizing for {job.title} at{' '}
                 <a href={job.companyUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   {job.company}
@@ -2163,7 +2105,7 @@ const ResumeReviser = ({ job, onBack, initialResumeText }: { job: Job; onBack: (
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-10">
           {!revised ? (
             <div className="space-y-8">
               <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
@@ -2460,7 +2402,7 @@ const ComparisonTable = ({ jobs, onRemove, onGoHome }: { jobs: Job[]; onRemove: 
           <TableIcon size={40} />
         </div>
         <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">No jobs selected for comparison</h3>
-        <p className="text-slate-400 mb-8 max-w-md mx-auto font-light">Add jobs from the home page by clicking the "Compare" icon on any job card to see them side-by-side.</p>
+        <p className="text-slate-600 mb-8 max-w-md mx-auto font-medium">Add jobs from the home page by clicking the "Compare" icon on any job card to see them side-by-side.</p>
         <button 
           onClick={onGoHome}
           className="px-10 py-5 bg-fm-blue text-white rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-2xl shadow-blue-900/10"
@@ -2585,7 +2527,7 @@ const TrustComplianceFramework = () => (
           <div className="space-y-8">
             <div className="p-8 bg-white rounded-[3rem] border border-slate-100 shadow-xl text-center">
               <div className="text-4xl font-serif font-bold text-fm-blue mb-2">100%</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Encrypted Data</div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-widest">Encrypted Data</div>
             </div>
             <div className="p-8 bg-fm-blue text-white rounded-[3rem] shadow-2xl shadow-fm-blue/20 text-center">
               <div className="text-4xl font-serif font-bold mb-2">SOC2</div>
@@ -2599,7 +2541,7 @@ const TrustComplianceFramework = () => (
             </div>
             <div className="p-8 bg-white rounded-[3rem] border border-slate-100 shadow-xl text-center">
               <div className="text-4xl font-serif font-bold text-fm-violet mb-2">24/7</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Security Monitoring</div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-widest">Security Monitoring</div>
             </div>
           </div>
         </div>
@@ -2607,53 +2549,6 @@ const TrustComplianceFramework = () => (
     </div>
   </section>
 );
-
-const PlatformSuccessStories = () => (
-  <section className="py-24 px-8 bg-white overflow-hidden">
-    <div className="max-w-7xl mx-auto">
-      <div className="text-center mb-20">
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-fm-violet mb-4 block">Real Impact</span>
-        <h2 className="text-5xl font-serif font-bold text-slate-900 mb-6">Success Stories</h2>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
-          See how Forward Moves is helping professionals transition into high-growth AI careers.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {[
-          {
-            name: "Sarah J.",
-            role: "AI Product Manager",
-            prev: "Traditional Marketing",
-            story: "The Resume Matcher helped me realize I already had 80% of the skills needed for AI product roles. I just needed to translate my experience.",
-            img: "https://picsum.photos/seed/sarah/200/200"
-          },
-          {
-            name: "Marcus T.",
-            role: "Solutions Architect",
-            prev: "IT Support",
-            story: "The Reskilling Portal gave me a clear path. Within 3 months, I mastered the foundations and landed a role at a top AI startup.",
-            img: "https://picsum.photos/seed/marcus/200/200"
-          }
-        ].map((item, i) => (
-          <div key={i} className="p-12 bg-slate-50 rounded-[3.5rem] border border-slate-100 relative group hover:bg-white hover:shadow-2xl transition-all duration-500">
-            <Quote className="absolute top-10 right-10 text-slate-200 group-hover:text-fm-blue/20 transition-colors" size={64} />
-            <div className="flex items-center gap-6 mb-8">
-              <img src={item.img} alt={item.name} className="w-20 h-20 rounded-3xl object-cover shadow-lg" referrerPolicy="no-referrer" />
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900">{item.name}</h3>
-                <p className="text-fm-blue font-bold text-sm">{item.role}</p>
-                <p className="text-slate-400 text-xs uppercase tracking-widest mt-1">Formerly: {item.prev}</p>
-              </div>
-            </div>
-            <p className="text-xl text-slate-600 leading-relaxed italic">"{item.story}"</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
 
 const AICareerScout = () => {
   const [messages, setMessages] = useState<ScoutMessage[]>([
@@ -2689,10 +2584,10 @@ const AICareerScout = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/10 mb-4">
             <Globe className="text-fm-blue" size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Real-time Search Assistant</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em]">Real-time Search Assistant</span>
           </div>
           <h2 className="text-4xl font-serif font-bold">AI Career <span className="text-fm-blue">Scout</span></h2>
-          <p className="text-slate-400 mt-2">Powered by Gemini with Google Search Grounding</p>
+          <p className="text-slate-200 mt-2 font-medium">Powered by Gemini with Google Search Grounding</p>
         </div>
 
         <div className="flex-1 bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/10 p-6 overflow-y-auto mb-6 space-y-6 max-h-[500px] scrollbar-hide">
@@ -2704,7 +2599,7 @@ const AICareerScout = () => {
                 </div>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Sources</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Sources</p>
                     <div className="flex flex-wrap gap-2">
                       {msg.sources.map((source, si) => (
                         <a 
@@ -2712,7 +2607,7 @@ const AICareerScout = () => {
                           href={source.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-lg text-[10px] hover:bg-white/10 transition-colors border border-white/5"
+                          className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-lg text-xs hover:bg-white/10 transition-colors border border-white/5"
                         >
                           <ExternalLink size={10} /> {source.title}
                         </a>
@@ -2727,7 +2622,7 @@ const AICareerScout = () => {
             <div className="flex justify-start">
               <div className="bg-white/10 p-5 rounded-3xl border border-white/10 flex items-center gap-3">
                 <Loader2 className="animate-spin text-fm-blue" size={20} />
-                <span className="text-sm text-slate-400 italic">Scouting the web...</span>
+                <span className="text-sm text-slate-600 italic font-medium">Scouting the web...</span>
               </div>
             </div>
           )}
@@ -2805,7 +2700,7 @@ const FeedbackSection = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="feedback-name" className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Name</label>
+                  <label htmlFor="feedback-name" className="text-sm font-bold text-slate-600 uppercase tracking-widest ml-1">Name</label>
                   <input 
                     id="feedback-name"
                     type="text" 
@@ -2817,7 +2712,7 @@ const FeedbackSection = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="feedback-email" className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                  <label htmlFor="feedback-email" className="text-sm font-bold text-slate-600 uppercase tracking-widest ml-1">Email</label>
                   <input 
                     id="feedback-email"
                     type="email" 
@@ -2830,7 +2725,7 @@ const FeedbackSection = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label htmlFor="feedback-message" className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Message</label>
+                <label htmlFor="feedback-message" className="text-sm font-bold text-slate-600 uppercase tracking-widest ml-1">Message</label>
                 <textarea 
                   id="feedback-message"
                   required
@@ -2840,7 +2735,7 @@ const FeedbackSection = () => {
                   rows={4}
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-fm-blue/20 focus:border-fm-blue outline-none transition-all resize-none"
                 />
-                <p className="text-xs text-slate-400 mt-2 ml-1 italic">
+                <p className="text-xs text-slate-600 mt-2 ml-1 italic font-medium">
                   Did your match score improve or did you gain new insights? Tell us!
                 </p>
               </div>
@@ -2882,7 +2777,29 @@ export default function App() {
   const [view, setView] = useState<'home' | 'comparison' | 'resume-matcher' | 'resume-reviser' | 'interview-prep' | 'cover-letter' | 'reskilling'>('home');
   const [matchingJob, setMatchingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState('');
+  const [marketMatch, setMarketMatch] = useState<{ summary: string; topMatches: string[]; alignmentScore: number } | null>(null);
+  const [marketMatchLoading, setMarketMatchLoading] = useState(false);
   const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'scout'>('start');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (resumeText && jobs.length > 0 && homeTab === 'discover') {
+      const fetchMarketMatch = async () => {
+        setMarketMatchLoading(true);
+        const data = await generateMarketMatchSummary(resumeText, jobs);
+        setMarketMatch(data);
+        setMarketMatchLoading(false);
+      };
+      fetchMarketMatch();
+    }
+  }, [resumeText, jobs, homeTab]);
+
+  const navigateTo = (newView: typeof view, tab?: typeof homeTab) => {
+    setView(newView);
+    if (tab) setHomeTab(tab);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchJobs = async (query?: string) => {
     setLoading(true);
@@ -2961,26 +2878,29 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="bg-white py-10 px-12 border-b border-slate-50">
+      <header className="bg-white/80 backdrop-blur-md py-4 md:py-6 px-6 md:px-12 border-b border-slate-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-fm-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl" aria-hidden="true">F.</div>
-              <h1 className="text-xl font-bold tracking-tighter text-slate-900 hidden sm:block">Forward Moves</h1>
-            </div>
+          <div className="flex items-center gap-6 md:gap-10">
+            <button 
+              onClick={() => navigateTo('home', 'start')}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-fm-blue rounded-xl md:rounded-2xl flex items-center justify-center text-white font-bold text-lg md:text-xl" aria-hidden="true">F.</div>
+              <h1 className="text-lg md:text-xl font-bold tracking-tighter text-slate-900">Forward Moves</h1>
+            </button>
             
             <nav className="hidden lg:flex items-center gap-10" aria-label="Main navigation">
               <button 
-                onClick={() => { setView('home'); setHomeTab('start'); }} 
-                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${(view === 'home' || view === 'resume-matcher' || view === 'resume-reviser' || view === 'interview-prep' || view === 'cover-letter') && homeTab !== 'reskilling' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+                onClick={() => navigateTo('home', 'start')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${(view === 'home' || view === 'resume-matcher' || view === 'resume-reviser' || view === 'interview-prep' || view === 'cover-letter') && homeTab !== 'reskilling' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
                 aria-current={(view === 'home' || view === 'resume-matcher' || view === 'resume-reviser' || view === 'interview-prep' || view === 'cover-letter') && homeTab !== 'reskilling' ? 'page' : undefined}
               >
                 Home
                 <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${(view === 'home' || view === 'resume-matcher' || view === 'resume-reviser' || view === 'interview-prep' || view === 'cover-letter') && homeTab !== 'reskilling' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
               </button>
               <button 
-                onClick={() => setView('comparison')} 
-                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'comparison' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+                onClick={() => navigateTo('comparison')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'comparison' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
                 aria-current={view === 'comparison' ? 'page' : undefined}
               >
                 Comparison
@@ -2992,16 +2912,16 @@ export default function App() {
                 <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'comparison' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
               </button>
               <button 
-                onClick={() => { setView('home'); setHomeTab('reskilling'); }} 
-                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'reskilling' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+                onClick={() => navigateTo('home', 'reskilling')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'reskilling' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
                 aria-current={view === 'home' && homeTab === 'reskilling' ? 'page' : undefined}
               >
                 Reskilling
                 <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'reskilling' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
               </button>
               <button 
-                onClick={() => { setView('home'); setHomeTab('scout'); }} 
-                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'scout' ? 'text-fm-blue' : 'text-slate-400 hover:text-fm-blue'}`}
+                onClick={() => navigateTo('home', 'scout')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'scout' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
                 aria-current={view === 'home' && homeTab === 'scout' ? 'page' : undefined}
               >
                 AI Career Scout
@@ -3010,10 +2930,65 @@ export default function App() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-8">
-            {/* Login and Get Started removed per user request */}
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            
+            <div className="hidden lg:block">
+              {/* Login and Get Started removed per user request */}
+            </div>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden overflow-hidden bg-white border-t border-slate-50"
+            >
+              <div className="flex flex-col py-6 gap-2">
+                <button 
+                  onClick={() => navigateTo('home', 'start')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'start' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={() => navigateTo('comparison')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left flex items-center justify-between ${view === 'comparison' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  Comparison
+                  {selectedForComparison.length > 0 && (
+                    <span className="bg-fm-violet text-white text-[10px] px-2 py-0.5 rounded-full">
+                      {selectedForComparison.length}
+                    </span>
+                  )}
+                </button>
+                <button 
+                  onClick={() => navigateTo('home', 'reskilling')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'reskilling' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  Reskilling
+                </button>
+                <button 
+                  onClick={() => navigateTo('home', 'scout')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'scout' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  AI Career Scout
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Main Content */}
@@ -3031,7 +3006,10 @@ export default function App() {
           <>
             {homeTab === 'start' && (
               <>
-                <LandingSection />
+                <LandingSection onStart={() => {
+                  const el = document.getElementById('portal-content-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }} />
                 
                 <QuickStartGuide 
                   onStart={() => {
@@ -3073,7 +3051,7 @@ export default function App() {
                 </motion.div>
               )}
 
-              {homeTab === 'discover' && (
+               {homeTab === 'discover' && (
                 <motion.div
                   key="discover"
                   initial={{ opacity: 0, y: 10 }}
@@ -3082,6 +3060,76 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                   className="space-y-16"
                 >
+                  {/* Profile Match Summary */}
+                  {resumeText && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="glass-panel p-8 bg-gradient-to-br from-indigo-50 to-white border-indigo-100 shadow-xl overflow-hidden relative"
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <UserCheck size={120} className="text-indigo-600" />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                          <div>
+                            <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 flex items-center gap-3">
+                              <Sparkles className="text-indigo-600" size={24} />
+                              Profile Market Alignment
+                            </h2>
+                            <p className="text-slate-600">How your skills match the current AI & IT landscape</p>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <div className="text-3xl font-bold text-indigo-600">{marketMatch?.alignmentScore || 0}%</div>
+                              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Match Score</div>
+                            </div>
+                            <div className="w-16 h-16 rounded-full border-4 border-indigo-100 flex items-center justify-center relative">
+                              <svg className="w-full h-full -rotate-90">
+                                <circle 
+                                  cx="32" cy="32" r="28" 
+                                  fill="transparent" 
+                                  stroke="currentColor" 
+                                  strokeWidth="4" 
+                                  className="text-indigo-600"
+                                  strokeDasharray={`${(marketMatch?.alignmentScore || 0) * 1.76} 176`}
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        {marketMatchLoading ? (
+                          <div className="flex items-center gap-3 text-indigo-600 font-medium py-4">
+                            <Loader2 className="animate-spin" size={20} />
+                            Analyzing market alignment...
+                          </div>
+                        ) : marketMatch ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Market Summary</h3>
+                              <p className="text-slate-700 leading-relaxed italic">"{marketMatch.summary}"</p>
+                            </div>
+                            <div className="space-y-4">
+                              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Top Career Paths for You</h3>
+                              <div className="flex flex-wrap gap-2">
+                                {marketMatch.topMatches.map((title, idx) => (
+                                  <span key={idx} className="px-4 py-2 bg-white border border-indigo-100 text-indigo-700 rounded-xl text-sm font-medium shadow-sm">
+                                    {title}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-slate-500 italic">Upload your resume to see personalized market insights.</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Dashboard Stats */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 glass-panel p-8 bg-white border-slate-200 shadow-lg">
@@ -3090,7 +3138,7 @@ export default function App() {
                           <TrendingUp className="text-fm-blue" size={24} />
                           Market Insights
                         </h2>
-                        <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">Real-time Data</span>
+                        <span className="text-xs font-mono text-slate-600 uppercase tracking-widest font-bold">Real-time Data</span>
                       </div>
                       <div className="h-[300px] w-full">
                         {loading ? (
@@ -3170,7 +3218,7 @@ export default function App() {
                       <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                         <div className="relative flex-1 sm:w-80">
                           <label htmlFor="job-search-input" className="sr-only">Search roles or companies</label>
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} aria-hidden="true" />
+                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={20} aria-hidden="true" />
                           <input 
                             id="job-search-input"
                             type="text" 
@@ -3217,19 +3265,26 @@ export default function App() {
                           <div key={i} className="h-[450px] glass-panel animate-pulse bg-slate-50 rounded-3xl border border-slate-100" />
                         ))
                       ) : jobs.length > 0 ? (
-                        jobs.map((job) => (
-                          <JobCard 
-                            key={job.id} 
-                            job={job} 
-                            onMatch={handleMatchJob}
-                            onRevise={(j) => { setMatchingJob(j); setView('resume-reviser'); }}
-                            onLetter={(j) => { setMatchingJob(j); setView('cover-letter'); }}
-                            onPrep={(j) => { setMatchingJob(j); setView('interview-prep'); }}
-                            onSWOT={setActiveSWOT}
-                            onCompare={toggleComparison}
-                            isSelected={!!selectedForComparison.find(j => j.id === job.id)}
-                          />
-                        ))
+                        jobs.map((job) => {
+                          const isRecommended = marketMatch?.topMatches.some(m => 
+                            m.toLowerCase().includes(job.title.toLowerCase()) && 
+                            m.toLowerCase().includes(job.company.toLowerCase())
+                          );
+                          return (
+                            <JobCard 
+                              key={job.id} 
+                              job={job} 
+                              onMatch={handleMatchJob}
+                              onRevise={(j) => { setMatchingJob(j); setView('resume-reviser'); }}
+                              onLetter={(j) => { setMatchingJob(j); setView('cover-letter'); }}
+                              onPrep={(j) => { setMatchingJob(j); setView('interview-prep'); }}
+                              onSWOT={setActiveSWOT}
+                              onCompare={toggleComparison}
+                              isSelected={!!selectedForComparison.find(j => j.id === job.id)}
+                              isRecommended={isRecommended}
+                            />
+                          );
+                        })
                       ) : (
                         <div className="col-span-full py-32 text-center bg-white rounded-3xl border border-dashed border-slate-200">
                           <Search size={48} className="mx-auto text-slate-200 mb-6" />
@@ -3260,14 +3315,14 @@ export default function App() {
                             </div>
                             <div className="hidden sm:block">
                               <p className="text-white font-bold text-sm">{selectedForComparison.length} Job{selectedForComparison.length > 1 ? 's' : ''} Selected</p>
-                              <p className="text-slate-400 text-[10px] uppercase tracking-widest font-bold">Ready for comparison</p>
+                              <p className="text-slate-600 text-xs uppercase tracking-widest font-bold">Ready for comparison</p>
                             </div>
                           </div>
                           
                           <div className="flex items-center gap-3">
                             <button 
                               onClick={() => setSelectedForComparison([])}
-                              className="px-4 py-2 text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                              className="px-4 py-2 text-slate-600 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
                             >
                               Clear
                             </button>
@@ -3297,7 +3352,6 @@ export default function App() {
                   <SkillGapAnalyzer resumeText={resumeText} jobs={jobs} />
                   <MarketTrendTracker jobs={jobs} />
                   <TrustComplianceFramework />
-                  <PlatformSuccessStories />
                   <LabPhilosophy />
                   <FutureOutlook />
                 </motion.div>
@@ -3333,7 +3387,7 @@ export default function App() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold text-slate-800 tracking-tighter">Job Comparison</h2>
-              <button onClick={() => setView('home')} className="text-slate-400 hover:text-fm-blue text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all">
+              <button onClick={() => setView('home')} className="text-slate-600 hover:text-fm-blue text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all">
                 <ArrowLeft size={14} />
                 Back Home
               </button>
@@ -3355,31 +3409,31 @@ export default function App() {
               <div className="w-8 h-8 bg-fm-blue rounded-xl flex items-center justify-center text-white font-bold text-sm">F.</div>
               <span className="text-slate-800 font-bold text-xl tracking-tighter">Forward Moves</span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed font-light">
+            <p className="text-slate-600 text-sm leading-relaxed font-normal">
               Empowering job seekers nationwide with AI-driven insights and curated career resources.
             </p>
           </div>
           
           <div className="grid grid-cols-2 gap-20">
             <div>
-              <h4 className="text-[10px] font-bold text-slate-800 uppercase tracking-[0.2em] mb-8">Technology</h4>
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-[0.2em] mb-8">Technology</h4>
               <ul className="space-y-4">
-                <li className="text-slate-400 text-xs font-light">Google Search</li>
-                <li className="text-slate-400 text-xs font-light">Gemini 3.1 Flash</li>
+                <li className="text-slate-600 text-xs font-normal">Google Search</li>
+                <li className="text-slate-600 text-xs font-normal">Gemini 3.1 Flash</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] mb-8">Legal</h4>
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-[0.2em] mb-8">Legal</h4>
               <ul className="space-y-4">
-                <li className="text-slate-400 text-xs font-light">Privacy Policy</li>
-                <li className="text-slate-400 text-xs font-light">Terms of Service</li>
+                <li className="text-slate-600 text-xs font-normal">Privacy Policy</li>
+                <li className="text-slate-600 text-xs font-normal">Terms of Service</li>
               </ul>
             </div>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto mt-32 pt-12 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
+          <div className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
             &copy; 2026 Forward Moves USA.
           </div>
           <div className="flex gap-8">
