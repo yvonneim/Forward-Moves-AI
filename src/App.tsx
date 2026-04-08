@@ -63,6 +63,8 @@ import {
   Cell
 } from 'recharts';
 
+import { AudioPlayer } from './components/AudioPlayer';
+
 const LandingSection = ({ onStart }: { onStart: () => void }) => (
   <div className="relative min-h-[450px] md:min-h-[600px] flex items-center justify-center rounded-[3rem] overflow-hidden mb-12 bg-white border border-slate-100 shadow-sm">
     <div className="absolute inset-0">
@@ -81,6 +83,11 @@ const LandingSection = ({ onStart }: { onStart: () => void }) => (
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
       className="relative z-10 p-6 md:p-12 max-w-5xl text-center"
     >
+      <AudioPlayer 
+        title="Welcome Audio" 
+        text="Welcome to Forward Moves USA. Step into your AI-driven future. Your bridge to a more fulfilling career. We connect your unique talents to the most exciting opportunities in the AI-driven workforce." 
+      />
+      
       <div className="flex flex-col items-center gap-4 mb-6 md:mb-8">
         <span className="inline-block px-4 py-1.5 bg-slate-100 text-slate-700 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] rounded-full border border-slate-200">
           Forward Moves USA
@@ -114,6 +121,10 @@ const LandingSection = ({ onStart }: { onStart: () => void }) => (
 
 const QuickStartGuide = ({ onStart, onSetTab, onSetView }: { onStart: () => void; onSetTab: (tab: 'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'scout') => void; onSetView: (view: any) => void }) => (
   <div className="mb-20">
+    <AudioPlayer 
+      title="Guide Audio" 
+      text="Explore what's inside. Your gateway to the AI-driven workforce. Select a path to begin your journey: AI Career Scout, Reskilling Portal, Career Discovery, or Resume Prep." 
+    />
     <div className="flex flex-col items-center text-center mb-16">
       <div className="w-20 h-20 bg-fm-blue rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-fm-blue/10 mb-8">
         <Compass size={32} />
@@ -206,6 +217,10 @@ const ResumeSetup = ({ onSet, currentResume }: { onSet: (text: string) => void; 
 
   return (
     <div id="resume-upload-section" className="glass-panel p-6 md:p-10 bg-gradient-to-br from-fm-blue/5 to-fm-violet/5 border-fm-blue/20 shadow-2xl mb-16 relative overflow-hidden scroll-mt-24">
+      <AudioPlayer 
+        title="Setup Audio" 
+        text="Prepare your profile for the AI frontier. Upload or paste your resume to get started. We use this as a baseline to match you with the best roles." 
+      />
       <div className="absolute top-0 right-0 p-4">
         <div className="w-24 h-24 bg-fm-blue/10 rounded-full blur-3xl" />
       </div>
@@ -3183,6 +3198,10 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                   className="space-y-16"
                 >
+                  <AudioPlayer 
+                    title="Discovery Audio" 
+                    text="Career Discovery. Explore how your skills match the current AI and IT landscape. We analyze your resume against thousands of job listings to calculate your alignment score and identify top career paths." 
+                  />
                   {/* Profile Match Summary */}
                   {resumeText && (
                     <motion.div 
@@ -3612,6 +3631,10 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <AudioPlayer 
+                    title="Reskilling Audio" 
+                    text="Reskilling Portal. Access curated learning modules and technical reskilling programs to master AI skills. Stay ahead in the rapidly evolving job market." 
+                  />
                   <ReskillingView />
                 </motion.div>
               )}
@@ -3624,6 +3647,10 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <AudioPlayer 
+                    title="National Careers Audio" 
+                    text="National Careers Service. Explore career paths, labor market information, and professional development resources provided by the National Careers Service." 
+                  />
                   <NationalCareersView />
                 </motion.div>
               )}
@@ -3636,6 +3663,10 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <AudioPlayer 
+                    title="Glossary Audio" 
+                    text="AI Career Glossary. Master the terminology of the AI-driven workforce. Understand the key concepts and technologies shaping the future of work." 
+                  />
                   <GlossaryView />
                 </motion.div>
               )}
@@ -3648,6 +3679,10 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <AudioPlayer 
+                    title="Scout Audio" 
+                    text="AI Career Scout. Chat with our Gemini-powered assistant about job trends, company news, and personalized career advice." 
+                  />
                   <AICareerScout />
                 </motion.div>
               )}
@@ -3718,61 +3753,6 @@ export default function App() {
       <AnimatePresence>
         {activeSWOT && (
           <SWOTModal job={activeSWOT} onClose={() => setActiveSWOT(null)} />
-        )}
-
-        {activeHelpTool && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100"
-            >
-              <div className="p-10">
-                <div className="flex justify-between items-start mb-8">
-                  <div className="w-16 h-16 bg-fm-blue/10 rounded-2xl flex items-center justify-center text-fm-blue">
-                    {activeHelpTool === 'match' && <Zap size={32} />}
-                    {activeHelpTool === 'revise' && <PenTool size={32} />}
-                    {activeHelpTool === 'letter' && <FileText size={32} />}
-                    {activeHelpTool === 'prep' && <MessageSquare size={32} />}
-                    {activeHelpTool === 'swot' && <TrendingUp size={32} />}
-                  </div>
-                  <button onClick={() => setActiveHelpTool(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                    <X size={24} className="text-slate-400" />
-                  </button>
-                </div>
-                
-                <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                  {activeHelpTool === 'match' && 'Resume Matcher'}
-                  {activeHelpTool === 'revise' && 'AI Resume Reviser'}
-                  {activeHelpTool === 'letter' && 'Cover Letter Drafter'}
-                  {activeHelpTool === 'prep' && 'Interview Prep'}
-                  {activeHelpTool === 'swot' && 'SWOT Analysis'}
-                </h2>
-                
-                <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                  {activeHelpTool === 'match' && 'Our AI analyzes your resume against the specific job description, identifying keyword gaps and calculating a compatibility score to help you understand your standing.'}
-                  {activeHelpTool === 'revise' && 'This tool automatically rewrites your resume bullet points to mirror the language and requirements of the job, making your experience more relevant to recruiters.'}
-                  {activeHelpTool === 'letter' && 'Generate a professional, tailored cover letter that connects your past achievements directly to the needs of the hiring manager for this specific role.'}
-                  {activeHelpTool === 'prep' && 'Prepare for the interview with AI-generated questions tailored to the role, along with strategic advice on how to highlight your strengths.'}
-                  {activeHelpTool === 'swot' && 'A strategic analysis of your profile relative to the job, highlighting your Strengths, Weaknesses, Opportunities, and potential Threats in the application process.'}
-                </p>
-                
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-fm-blue mb-3">How to use</h4>
-                  <p className="text-sm text-slate-500 leading-relaxed">
-                    Simply find a job you like in the Career Discovery portal and click the corresponding button on the job card to launch the tool.
-                  </p>
-                </div>
-                
-                <button 
-                  onClick={() => setActiveHelpTool(null)}
-                  className="w-full mt-10 py-4 bg-fm-blue text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-fm-blue/20"
-                >
-                  Got it
-                </button>
-              </div>
-            </motion.div>
-          </div>
         )}
 
         {activeHelpTool && (
