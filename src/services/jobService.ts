@@ -13,11 +13,13 @@ export const searchJobs = async (query: string = "AI and IT job openings in USA"
     - Google (National)
     - Microsoft (National)
     - Meta (National)
+    - Vanguard (FinTech) - Use: https://www.vanguardjobs.com/home-us/?source=Career_Website
+    - Accuris (Tech) - Use: https://accuristech.com/careers-culture/
     - Major HealthTech, FinTech, and Enterprise IT firms
     
     Search Query: ${query}
     
-    Ensure the results are real and include valid URLs to the job postings AND the company's general career page URL.`,
+    CRITICAL: Ensure the "companyUrl" is the general, reliable career landing page for the company. Many specific job URLs break quickly; the career site URL must be the primary reliable link.`,
     config: {
       tools: [{ googleSearch: {} }],
       responseMimeType: "application/json",
@@ -44,7 +46,30 @@ export const searchJobs = async (query: string = "AI and IT job openings in USA"
   });
 
   try {
-    return JSON.parse(response.text || "[]");
+    const jobs: Job[] = JSON.parse(response.text || "[]");
+    
+    // Post-processing to fix known broken URLs and ensure reliability
+    return jobs.map(job => {
+      const company = job.company.toLowerCase();
+      if (company.includes('vanguard')) {
+        job.companyUrl = "https://www.vanguardjobs.com/home-us/?source=Career_Website";
+      } else if (company.includes('accuris')) {
+        job.companyUrl = "https://accuristech.com/careers-culture/";
+      } else if (company.includes('microsoft')) {
+        job.companyUrl = "https://careers.microsoft.com/";
+      } else if (company.includes('google')) {
+        job.companyUrl = "https://www.google.com/about/careers/applications/jobs/results/";
+      } else if (company.includes('amazon')) {
+        job.companyUrl = "https://www.amazon.jobs/";
+      } else if (company.includes('verizon')) {
+        job.companyUrl = "https://www.verizon.com/about/work/jobs/search";
+      }
+      
+      // Ensure job.url also points to the reliable company career site
+      job.url = job.companyUrl;
+      
+      return job;
+    });
   } catch (e) {
     console.error("Failed to parse job search results", e);
     return [];

@@ -35,7 +35,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, SWOTAnalysis, ResumeMatch, InterviewPrep, CoverLetter, RevisedResume } from './types';
 import { searchJobs, generateSWOT } from './services/jobService';
-import { matchResumeToJob, reviseResume, generateMarketMatchSummary } from './services/resumeService';
+import { matchResumeToJob, reviseResume, generateMarketMatchSummary, getRoleEvolution, RoleEvolution } from './services/resumeService';
 import { generateInterviewPrep, generateCoverLetter, getInterviewFeedback } from './services/applicationService';
 import { chatWithScout, ScoutMessage } from './services/scoutService';
 import Markdown from 'react-markdown';
@@ -643,14 +643,17 @@ const FutureOutlook = () => (
           <h3 className="text-xl font-bold text-slate-900 mb-6">In-Demand Skillsets</h3>
           <ul className="space-y-4">
             {[
-              { skill: "Multi-modal Prompting", desc: "Mastering text, image, video, and audio AI inputs." },
-              { skill: "AI Governance", desc: "Understanding the legal and safety frameworks of AI." },
-              { skill: "LLM Fine-tuning", desc: "Adapting base models to specific industry knowledge." },
-              { skill: "Strategic AI Auditing", desc: "Evaluating AI outputs for bias and accuracy." },
-              { skill: "Cross-Platform Integration", desc: "Connecting AI tools across different software stacks." }
+              { skill: "Multi-modal Prompting", desc: "Mastering text, image, video, and audio AI inputs.", url: "https://www.coursera.org/search?query=prompt%20engineering" },
+              { skill: "AI Governance", desc: "Understanding the legal and safety frameworks of AI.", url: "https://www.edx.org/search?q=ai+governance" },
+              { skill: "LLM Fine-tuning", desc: "Adapting base models to specific industry knowledge.", url: "https://learn.deeplearning.ai/" },
+              { skill: "Strategic AI Auditing", desc: "Evaluating AI outputs for bias and accuracy.", url: "https://www.udemy.com/courses/search/?src=ukw&q=ai+ethics" },
+              { skill: "Cross-Platform Integration", desc: "Connecting AI tools across different software stacks.", url: "https://www.zapier.com/university" }
             ].map((item, i) => (
               <li key={i} className="group/item">
-                <p className="font-bold text-slate-900 text-sm mb-1 group-hover/item:text-fm-violet transition-colors">{item.skill}</p>
+                <div className="flex justify-between items-start">
+                  <p className="font-bold text-slate-900 text-sm mb-1 group-hover/item:text-fm-violet transition-colors">{item.skill}</p>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-fm-violet font-bold uppercase tracking-widest hover:underline">Courses</a>
+                </div>
                 <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
               </li>
             ))}
@@ -670,14 +673,17 @@ const FutureOutlook = () => (
           <h3 className="text-xl font-bold text-slate-900 mb-6">Essential Apps & Tools</h3>
           <ul className="space-y-4">
             {[
-              { tool: "LangChain / CrewAI", desc: "Frameworks for building multi-agent AI systems." },
-              { tool: "Claude 4 / GPT-5", desc: "The next generation of reasoning-heavy LLMs." },
-              { tool: "Perplexity Pro", desc: "The standard for AI-powered research and discovery." },
-              { tool: "Midjourney v7+", desc: "Advanced generative visual design for marketing." },
-              { tool: "Zapier Central", desc: "AI-first automation for business processes." }
+              { tool: "LangChain / CrewAI", desc: "Frameworks for building multi-agent AI systems.", url: "https://python.langchain.com/docs/get_started/introduction" },
+              { tool: "Claude 4 / GPT-5", desc: "The next generation of reasoning-heavy LLMs.", url: "https://anthropic.com/claude" },
+              { tool: "Perplexity Pro", desc: "The standard for AI-powered research and discovery.", url: "https://www.perplexity.ai/" },
+              { tool: "Midjourney v7+", desc: "Advanced generative visual design for marketing.", url: "https://www.midjourney.com/" },
+              { tool: "Zapier Central", desc: "AI-first automation for business processes.", url: "https://zapier.com/central" }
             ].map((item, i) => (
               <li key={i} className="group/item">
-                <p className="font-bold text-slate-900 text-sm mb-1 group-hover/item:text-fm-orange transition-colors">{item.tool}</p>
+                <div className="flex justify-between items-start">
+                  <p className="font-bold text-slate-900 text-sm mb-1 group-hover/item:text-fm-orange transition-colors">{item.tool}</p>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-fm-orange font-bold uppercase tracking-widest hover:underline">Docs</a>
+                </div>
                 <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
               </li>
             ))}
@@ -755,13 +761,13 @@ const JobCard = ({
         ))}
       </div>
 
-      <div className="mt-auto space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="mt-auto space-y-4">
+        <div className="flex gap-2">
           <button 
             onClick={() => onMatch(job)}
             aria-label={`Match resume to ${job.title}`}
             title="Compare your resume against the job description to see your compatibility score and keyword gaps."
-            className="flex items-center justify-center gap-2 py-3 bg-fm-blue text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-fm-blue text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm"
           >
             <Zap size={14} /> Match
           </button>
@@ -769,36 +775,40 @@ const JobCard = ({
             onClick={() => onRevise(job)}
             aria-label={`Revise resume for ${job.title}`}
             title="Automatically optimize your resume bullet points to better align with this specific role's requirements."
-            className="flex items-center justify-center gap-2 py-3 bg-violet-100 text-fm-violet rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-violet-200 transition-all border border-violet-200"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-violet-100 text-fm-violet rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-violet-200 transition-all border border-violet-200"
           >
             <PenTool size={14} /> Revise
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <button 
-            onClick={() => onLetter(job)}
-            aria-label={`Draft cover letter for ${job.title}`}
-            title="Generate a tailored cover letter that highlights your most relevant experiences for this position."
-            className="flex items-center justify-center gap-2 py-3 bg-teal-100 text-teal-800 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-teal-200 transition-all border border-teal-200"
-          >
-            Letter
-          </button>
-          <button 
-            onClick={() => onPrep(job)}
-            aria-label={`Get interview tips for ${job.title}`}
-            title="Get AI-generated practice questions and strategic advice based on the job's core competencies."
-            className="flex items-center justify-center gap-2 py-3 bg-indigo-100 text-indigo-800 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-200 transition-all border border-indigo-200"
-          >
-            Interview Tips
-          </button>
-          <button 
-            onClick={() => onSWOT(job)}
-            aria-label={`SWOT analysis for ${job.title}`}
-            title="Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job."
-            className="flex items-center justify-center gap-2 py-3 bg-blue-50 text-fm-blue rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100"
-          >
-            SWOT Analysis
-          </button>
+        
+        <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">AI Suite</span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => onLetter(job)}
+              aria-label={`Draft cover letter for ${job.title}`}
+              title="Generate a tailored cover letter that highlights your most relevant experiences for this position."
+              className="w-9 h-9 flex items-center justify-center bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-all border border-teal-100"
+            >
+              <FileText size={16} />
+            </button>
+            <button 
+              onClick={() => onPrep(job)}
+              aria-label={`Get interview tips for ${job.title}`}
+              title="Get AI-generated practice questions and strategic advice based on the job's core competencies."
+              className="w-9 h-9 flex items-center justify-center bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-all border border-indigo-100"
+            >
+              <MessageSquare size={16} />
+            </button>
+            <button 
+              onClick={() => onSWOT(job)}
+              aria-label={`SWOT analysis for ${job.title}`}
+              title="Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job."
+              className="w-9 h-9 flex items-center justify-center bg-blue-50 text-fm-blue rounded-lg hover:bg-blue-100 transition-all border border-blue-100"
+            >
+              <TrendingUp size={16} />
+            </button>
+          </div>
         </div>
       </div>
       
@@ -1502,6 +1512,7 @@ const PORTALS = [
   { id: 'Google', n: 'Google', u: 'https://www.coursera.org/google', d: 'Take the next step in your learning journey. Each course in this learning program is designed to fit your unique career goals. Enroll in another course to continue building functional, job-ready solutions you can use right away.', icon: '📘', bg: 'bg-blue-50/60', border: 'border-blue-100' },
   { id: 'NotebookLM', n: 'NotebookLM', u: 'https://notebooklm.google.com/', d: 'Use AI as your research partner to gain insights, generate summaries, and pressure test ideas.', icon: '📓', bg: 'bg-indigo-50/60', border: 'border-indigo-100' },
   { id: 'Anthropic', n: 'Anthropic', u: 'https://anthropic.skilljar.com/', d: 'Anthropic provides direct access to frontier-model research and AI development resources.', icon: '⚡', bg: 'bg-violet-50/60', border: 'border-violet-100' },
+  { id: 'DeepLearning', n: 'DeepLearning.AI', u: 'https://www.deeplearning.ai/', d: 'DeepLearning.AI provides world-class AI education through courses, specializations, and short courses led by Andrew Ng.', icon: '🧠', bg: 'bg-blue-50/60', border: 'border-blue-100' },
   { id: 'edX', n: 'edX', u: 'https://authn.edx.org/login?next=https%3A%2F%2Flearning.edx.org%2Fcourse%2Fcourse-v1%3AAI%2Bllmops3x%2B1T2024%2Fhome', d: 'edX is a global learning platform offering courses from world-class universities and industry leaders.', icon: '🧠', bg: 'bg-emerald-50/60', border: 'border-emerald-100' },
   { id: 'LHH', n: 'LHH', u: 'https://www.lhh.com/en-us', d: 'LHH brings together global excellence, local knowledge, and decades of experience to support companies and professionals across the talent lifecycle.', icon: '💼', bg: 'bg-blue-50/60', border: 'border-blue-100' },
   { id: 'LinkedIn', n: 'LinkedIn Learning', u: 'https://www.linkedin.com/learning-login/continue?account=67698794&forceAccount=false&authUUID=q95hhwNFS%2BWFOWMQt%2BnDKg%3D%3D&redirect=https%3A%2F%2Fwww.linkedin.com%2Flearning%2F%3Fu%3D67698794', d: 'LinkedIn Learning offers professional skill development through a vast library of expert-led video content.', icon: '🔗', bg: 'bg-blue-50/60', border: 'border-blue-100' },
@@ -1527,6 +1538,10 @@ const LEARNING_MODULES = [
   { p: 'Anthropic', e: '☁️', n: 'Claude with Amazon Bedrock', d: 'Deploying Claude within Amazon cloud infrastructure at scale.', u: 'https://anthropic.skilljar.com/claude-in-amazon-bedrock' },
   { p: 'Anthropic', e: '🌐', n: 'Claude with Vertex AI', d: 'Integrating Claude into Google Cloud platform environments.', u: 'https://anthropic.skilljar.com/claude-with-google-vertex' },
   { p: 'Anthropic', e: '🤖', n: 'Intro to Agent Skills', d: 'Foundations for building autonomous AI agents and pipelines.', u: 'https://anthropic.skilljar.com/introduction-to-agent-skills' },
+  // DeepLearning.AI
+  { p: 'DeepLearning', e: '🧠', n: 'AI For Everyone', d: 'A non-technical introduction to AI concepts and their impact on business and society.', u: 'https://www.deeplearning.ai/courses/ai-for-everyone/' },
+  { p: 'DeepLearning', e: '⚡', n: 'Short Courses', d: 'Free, bite-sized courses on the latest AI tools and techniques (LLMs, RAG, Agents).', u: 'https://learn.deeplearning.ai/' },
+  { p: 'DeepLearning', e: '🏗️', n: 'AI Agentic Design Patterns', d: 'Learn to build autonomous agents using the latest design patterns.', u: 'https://learn.deeplearning.ai/courses/ai-agentic-design-patterns-with-autogen/' },
   // Microsoft
   { p: 'Microsoft', e: '💡', n: 'Episode 1: Intro to Gen AI', d: 'Introduction to Generative AI and Large Language Models.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/introduction-to-generative-ai-and-llms-generative-ai-for-beginners' },
   { p: 'Microsoft', e: '🔭', n: 'Episode 2: Exploring LLMs', d: 'Comparing and evaluating different LLM architectures.', u: 'https://learn.microsoft.com/en-us/shows/generative-ai-for-beginners/exploring-and-comparing-different-llms-generative-ai-for-beginners' },
@@ -1553,6 +1568,7 @@ const LEARNING_MODULES = [
   { p: 'Udemy', e: '🛡️', n: 'AI Auditing', d: 'Governance frameworks and accountability practices for AI systems.', u: 'https://verizonreskilling.udemy.com/course/ai-audit-certification-mastercalss/' },
   { p: 'Udemy', e: '🔐', n: 'AI Governance', d: 'Risk management and compliance for LLM deployments.', u: 'https://verizonreskilling.udemy.com/course/ai-governance-professional-aigp-2025/' },
   { p: 'Udemy', e: '📈', n: 'AI Mock Exam', d: 'Practice exams for AI certification preparation.', u: 'https://verizonreskilling.udemy.com/course/google-cloud-generative-ai-leader-3-mock-generative-ai-leader-exams/' },
+  { p: 'Udemy', e: '⚖️', n: 'AI Ethics & Governance', d: 'Explore ethical considerations and governance frameworks for AI.', u: 'https://www.udemy.com/courses/search/?src=ukw&q=ai+ethics' },
   // LHH
   { p: 'LHH', e: '💼', n: 'Career Transition', d: 'Lee Hecht Harrison professional coaching and support services.', u: 'https://www.lhh.com/en-us' },
   { p: 'LHH', e: '📝', n: 'Presence Guide', d: 'Optimizing your digital profile for the modern hiring process.', u: 'https://www.lhh.com/en-us/individuals/' },
@@ -1666,23 +1682,14 @@ const CATEGORIES = [
 
 const ReskillingView = () => {
   const [activePortal, setActivePortal] = useState('Google');
-  const [activeCategory, setActiveCategory] = useState('All');
 
   const filteredModules = useMemo(() => {
     let modules = LEARNING_MODULES;
     if (activePortal !== 'All') {
       modules = modules.filter(m => m.p === activePortal);
     }
-    if (activeCategory !== 'All') {
-      modules = modules.filter(m => (m as any).c === activeCategory);
-    }
     return modules;
-  }, [activePortal, activeCategory]);
-
-  const filteredPaths = useMemo(() => {
-    if (activeCategory === 'All') return PATHS_DATA;
-    return PATHS_DATA.filter(p => p.c === activeCategory);
-  }, [activeCategory]);
+  }, [activePortal]);
 
   return (
     <motion.div 
@@ -1780,31 +1787,135 @@ const ReskillingView = () => {
           </div>
         </div>
       </section>
+    </motion.div>
+  );
+};
 
-      {/* Careers Section */}
-      <section className="max-w-7xl mx-auto px-6">
-        <div className="mb-12">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-fm-violet mb-4 block">Mission-Driven Companies</span>
-          <h2 className="text-4xl font-serif font-bold text-indigo-900 mb-4">National Careers</h2>
-          <p className="text-blue-600/70 max-w-xl">Explore opportunities across mission-driven sectors nationwide.</p>
+const GlossaryView = () => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-24 pb-20"
+    >
+      <section className="relative h-[40vh] flex items-center justify-center overflow-hidden rounded-[3rem] bg-indigo-900 text-white shadow-2xl">
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=2070" 
+            alt="Knowledge" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
         </div>
+        <div className="relative z-10 text-center px-6 max-w-4xl">
+          <span className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md text-white text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-8 border border-white/10">
+            AI Vocabulary
+          </span>
+          <h2 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter leading-tight mb-8">
+            The <span className="text-fm-violet italic">Glossary.</span>
+          </h2>
+          <p className="text-lg text-indigo-100 font-medium max-w-2xl mx-auto leading-relaxed">
+            Standard terminology for navigating technical and strategic discussions in the generative AI space.
+          </p>
+        </div>
+      </section>
 
+      <section className="max-w-7xl mx-auto px-6">
+        <div className="bg-white rounded-[3rem] p-16 text-slate-900 border border-slate-200 overflow-hidden relative shadow-xl">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-fm-violet/5 blur-[120px] rounded-full -mr-48 -mt-48" />
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20">
+            <div>
+              <h3 className="text-4xl font-serif font-bold mb-8 text-indigo-900">Core Concepts</h3>
+              <p className="text-xl text-slate-500 mb-12 leading-relaxed max-w-lg">
+                Master the language of the future. These terms define the current state of artificial intelligence.
+              </p>
+              <div className="flex flex-col gap-4">
+                <a href="https://www.ibm.com/topics/artificial-intelligence/glossary" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border border-slate-100 hover:border-fm-violet/30 transition-all group">
+                  <span className="font-bold text-slate-900">IBM AI Glossary</span>
+                  <ExternalLink size={18} className="text-slate-400 group-hover:text-fm-violet" />
+                </a>
+                <a href="https://developers.google.com/machine-learning/glossary" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border border-slate-100 hover:border-fm-violet/30 transition-all group">
+                  <span className="font-bold text-slate-900">Google Machine Learning Glossary</span>
+                  <ExternalLink size={18} className="text-slate-400 group-hover:text-fm-violet" />
+                </a>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+              {TERMS.map((t, i) => (
+                <div key={i} className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-fm-violet/30 transition-all group shadow-sm">
+                  <h4 className="font-serif text-2xl font-bold mb-3 text-fm-violet group-hover:text-fm-blue transition-colors">{t.t}</h4>
+                  <p className="text-lg text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">{t.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </motion.div>
+  );
+};
+
+const NationalCareersView = () => {
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredPaths = useMemo(() => {
+    if (activeCategory === 'All') return PATHS_DATA;
+    return PATHS_DATA.filter(p => p.c === activeCategory);
+  }, [activeCategory]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-24 pb-20"
+    >
+      <section className="relative h-[40vh] flex items-center justify-center overflow-hidden rounded-[3rem] bg-fm-blue text-white shadow-2xl">
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2069" 
+            alt="Office" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="relative z-10 text-center px-6 max-w-4xl">
+          <span className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md text-white text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-8 border border-white/10">
+            Mission-Driven Companies
+          </span>
+          <h2 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter leading-tight mb-8">
+            National <span className="text-blue-200 italic">Careers.</span>
+          </h2>
+          <p className="text-lg text-blue-100 font-medium max-w-2xl mx-auto leading-relaxed">
+            Explore opportunities across mission-driven sectors nationwide. Find your next role in Climate, Health, Education, and more.
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-1/4 space-y-2">
+            <div className="mb-6">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-fm-blue mb-4 block">Sector Categories</span>
+              <h3 className="text-2xl font-serif font-bold text-slate-900">Filter by Impact</h3>
+            </div>
             {CATEGORIES.map(c => (
               <button
                 key={c.id}
                 onClick={() => setActiveCategory(c.id)}
-                className={`w-full text-left px-6 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] transition-all ${activeCategory === c.id ? 'bg-fm-blue text-white shadow-lg' : 'bg-white text-blue-400 hover:bg-blue-50'}`}
+                className={`w-full text-left px-6 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] transition-all flex items-center gap-4 ${activeCategory === c.id ? 'bg-fm-blue text-white shadow-lg scale-[1.02]' : 'bg-white text-slate-600 hover:bg-blue-50 border border-slate-100'}`}
               >
-                {c.icon} {c.id}
+                <span className="text-lg">{c.icon}</span>
+                {c.id}
               </button>
             ))}
           </div>
 
-          <div className="lg:w-3/4 bg-white rounded-[2.5rem] p-10 shadow-xl border border-blue-100">
+          <div className="lg:w-3/4 bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100">
             <div className="mb-10 pb-10 border-b border-slate-50">
-              <p className="text-slate-600 font-medium italic">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-fm-blue mb-2">
+                {activeCategory === 'All' ? 'National Landscape' : `${activeCategory} Sector`}
+              </h4>
+              <p className="text-slate-600 font-medium italic text-lg">
                 {CATEGORIES.find(c => c.id === activeCategory)?.d}
               </p>
             </div>
@@ -1815,45 +1926,19 @@ const ReskillingView = () => {
                   href={p.u}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-8 rounded-[2rem] bg-blue-50 hover:bg-blue-50 hover:shadow-xl transition-all group border border-transparent hover:border-blue-100 shadow-sm"
+                  className="p-8 rounded-[2rem] bg-slate-50 hover:bg-white hover:shadow-2xl transition-all group border border-transparent hover:border-fm-blue/20 shadow-sm"
                 >
                   <div className="flex items-center gap-6 mb-6">
-                    <div className="text-4xl group-hover:scale-110 transition-transform">{p.e}</div>
-                    <h4 className="text-xl font-bold text-indigo-900 group-hover:text-fm-violet transition-colors">{p.n}</h4>
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
+                      {p.e}
+                    </div>
+                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-fm-blue transition-colors">{p.n}</h4>
                   </div>
-                  <p className="text-base text-blue-500 mb-8 leading-relaxed">{p.d}</p>
-                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-fm-violet flex items-center gap-2">
+                  <p className="text-base text-slate-500 mb-8 leading-relaxed">{p.d}</p>
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-fm-blue flex items-center gap-2">
                     View Careers <ExternalLink size={14} />
                   </span>
                 </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Glossary Section */}
-      <section className="max-w-7xl mx-auto px-6">
-        <div className="bg-white rounded-[3rem] p-16 text-slate-900 border border-slate-200 overflow-hidden relative shadow-xl">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-fm-violet/5 blur-[120px] rounded-full -mr-48 -mt-48" />
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-fm-violet mb-6 block">AI Vocabulary</span>
-              <h2 className="text-5xl font-serif font-bold mb-8">Glossary</h2>
-              <p className="text-xl text-slate-500 mb-12 leading-relaxed max-w-lg">
-                Standard terminology for navigating technical and strategic discussions in the generative AI space.
-              </p>
-              <div className="flex gap-6">
-                <a href="https://www.ibm.com/topics/artificial-intelligence/glossary" target="_blank" rel="noopener noreferrer" className="btn-primary !px-8 !py-4 !text-base">IBM Glossary</a>
-                <a href="https://developers.google.com/machine-learning/glossary" target="_blank" rel="noopener noreferrer" className="btn-secondary !px-8 !py-4 !text-base">Google ML</a>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-6">
-              {TERMS.map((t, i) => (
-                <div key={i} className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-fm-violet/30 transition-all group shadow-sm">
-                  <h4 className="font-serif text-2xl font-bold mb-3 text-fm-violet group-hover:text-fm-blue transition-colors">{t.t}</h4>
-                  <p className="text-lg text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">{t.d}</p>
-                </div>
               ))}
             </div>
           </div>
@@ -2474,12 +2559,12 @@ const ComparisonTable = ({ jobs, onRemove, onGoHome }: { jobs: Job[]; onRemove: 
             {jobs.map(job => (
               <td key={job.id} className="p-6">
                 <a 
-                  href={job.url} 
+                  href={job.companyUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-fm-blue hover:text-blue-800 font-bold text-base flex items-center gap-2 transition-colors"
                 >
-                  View Listing <ExternalLink size={18} />
+                  Career Site <ExternalLink size={18} />
                 </a>
               </td>
             ))}
@@ -2552,7 +2637,7 @@ const TrustComplianceFramework = () => (
 
 const AICareerScout = () => {
   const [messages, setMessages] = useState<ScoutMessage[]>([
-    { role: 'assistant', content: "Hello! I'm your AI Career Scout. I can help you find current job trends, company news, and career advice using real-time search. What would you like to know today?" }
+    { role: 'assistant', content: "Hello! I'm your AI Career Scout. I can help you find current job trends, company news, and career advice across ALL industries using real-time search. What would you like to know today?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -2773,13 +2858,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedForComparison, setSelectedForComparison] = useState<Job[]>([]);
   const [activeSWOT, setActiveSWOT] = useState<Job | null>(null);
+  const [activeHelpTool, setActiveHelpTool] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [view, setView] = useState<'home' | 'comparison' | 'resume-matcher' | 'resume-reviser' | 'interview-prep' | 'cover-letter' | 'reskilling'>('home');
   const [matchingJob, setMatchingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState('');
   const [marketMatch, setMarketMatch] = useState<{ summary: string; topMatches: string[]; alignmentScore: number } | null>(null);
   const [marketMatchLoading, setMarketMatchLoading] = useState(false);
-  const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'scout'>('start');
+  const [roleEvolution, setRoleEvolution] = useState<RoleEvolution | null>(null);
+  const [roleEvolutionLoading, setRoleEvolutionLoading] = useState(false);
+  const [homeTab, setHomeTab] = useState<'start' | 'discover' | 'labs' | 'insights' | 'reskilling' | 'national-careers' | 'glossary' | 'scout'>('start');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -2790,7 +2878,14 @@ export default function App() {
         setMarketMatch(data);
         setMarketMatchLoading(false);
       };
+      const fetchRoleEvolution = async () => {
+        setRoleEvolutionLoading(true);
+        const data = await getRoleEvolution(resumeText, jobs);
+        setRoleEvolution(data);
+        setRoleEvolutionLoading(false);
+      };
       fetchMarketMatch();
+      fetchRoleEvolution();
     }
   }, [resumeText, jobs, homeTab]);
 
@@ -2920,6 +3015,22 @@ export default function App() {
                 <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'reskilling' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
               </button>
               <button 
+                onClick={() => navigateTo('home', 'national-careers')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'national-careers' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
+                aria-current={view === 'home' && homeTab === 'national-careers' ? 'page' : undefined}
+              >
+                National Careers
+                <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'national-careers' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
+              </button>
+              <button 
+                onClick={() => navigateTo('home', 'glossary')} 
+                className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'glossary' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
+                aria-current={view === 'home' && homeTab === 'glossary' ? 'page' : undefined}
+              >
+                Glossary
+                <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-fm-blue transition-all duration-300 ${view === 'home' && homeTab === 'glossary' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'}`} />
+              </button>
+              <button 
                 onClick={() => navigateTo('home', 'scout')} 
                 className={`text-xs font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${view === 'home' && homeTab === 'scout' ? 'text-fm-blue' : 'text-slate-600 hover:text-fm-blue'}`}
                 aria-current={view === 'home' && homeTab === 'scout' ? 'page' : undefined}
@@ -2978,6 +3089,18 @@ export default function App() {
                   className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'reskilling' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
                 >
                   Reskilling
+                </button>
+                <button 
+                  onClick={() => navigateTo('home', 'national-careers')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'national-careers' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  National Careers
+                </button>
+                <button 
+                  onClick={() => navigateTo('home', 'glossary')}
+                  className={`px-6 py-4 text-sm font-bold uppercase tracking-widest text-left ${view === 'home' && homeTab === 'glossary' ? 'text-fm-blue bg-fm-blue/5' : 'text-slate-600'}`}
+                >
+                  Glossary
                 </button>
                 <button 
                   onClick={() => navigateTo('home', 'scout')}
@@ -3130,6 +3253,109 @@ export default function App() {
                     </motion.div>
                   )}
 
+                  {/* Role Evolution Section */}
+                  {resumeText && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-panel p-8 bg-white border-slate-200 shadow-xl overflow-hidden relative"
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <Cpu size={120} className="text-fm-violet" />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                          <div>
+                            <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 flex items-center gap-3">
+                              <Compass className="text-fm-violet" size={24} />
+                              Role Evolution: AI Equivalent
+                            </h2>
+                            <p className="text-slate-600">Discover how your current role translates to the AI-driven economy</p>
+                          </div>
+                          <div className="px-4 py-2 bg-fm-violet/10 text-fm-violet rounded-full text-xs font-bold uppercase tracking-widest">
+                            Career Pivot Strategy
+                          </div>
+                        </div>
+
+                        {roleEvolutionLoading ? (
+                          <div className="flex items-center gap-3 text-fm-violet font-medium py-4">
+                            <Loader2 className="animate-spin" size={20} />
+                            Calculating your AI-era equivalent...
+                          </div>
+                        ) : roleEvolution ? (
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-8">
+                              <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div className="text-center sm:text-left">
+                                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Current Role</div>
+                                  <div className="text-xl font-bold text-slate-600">{roleEvolution.currentTitle}</div>
+                                </div>
+                                <div className="hidden sm:block">
+                                  <ArrowRight className="text-slate-300" size={24} />
+                                </div>
+                                <div className="sm:hidden">
+                                  <Plus className="text-slate-300" size={24} />
+                                </div>
+                                <div className="text-center sm:text-left">
+                                  <div className="text-[10px] font-bold uppercase tracking-widest text-fm-violet mb-1">AI-Era Equivalent</div>
+                                  <div className="text-2xl font-serif font-bold text-fm-violet">{roleEvolution.aiEquivalentTitle}</div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Why this evolution?</h3>
+                                <p className="text-slate-700 leading-relaxed">{roleEvolution.evolutionReasoning}</p>
+                              </div>
+
+                              <div className="space-y-4">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Transferable Skillsets</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {roleEvolution.transferableSkills.map((skill, idx) => (
+                                    <span key={idx} className="px-4 py-2 bg-fm-violet/5 border border-fm-violet/10 text-fm-violet rounded-xl text-sm font-medium">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-6">
+                              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Who's Hiring for this?</h3>
+                              <div className="space-y-4">
+                                {roleEvolution.recommendedCompanies.map((company, idx) => (
+                                  <div key={idx} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <h4 className="font-bold text-slate-900 group-hover:text-fm-blue transition-colors">{company.name}</h4>
+                                      <a 
+                                        href={company.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-slate-400 hover:text-fm-blue transition-colors"
+                                      >
+                                        <ExternalLink size={14} />
+                                      </a>
+                                    </div>
+                                    <p className="text-xs text-slate-500 leading-relaxed">{company.reason}</p>
+                                  </div>
+                                ))}
+                                {roleEvolution.recommendedCompanies.length === 0 && (
+                                  <p className="text-xs text-slate-400 italic">Analyzing market for specific company matches...</p>
+                                )}
+                              </div>
+                              <button 
+                                onClick={() => setHomeTab('scout')}
+                                className="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                              >
+                                Chat with AI Scout <ChevronRight size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Dashboard Stats */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 glass-panel p-8 bg-white border-slate-200 shadow-lg">
@@ -3241,22 +3467,43 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Tool Descriptions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
-                      {[
-                        { label: 'Match', color: 'bg-fm-blue/10 text-fm-blue', desc: 'Compare your resume against the job description to see your compatibility score and keyword gaps.' },
-                        { label: 'Revise', color: 'bg-fm-violet/10 text-fm-violet', desc: 'Automatically optimize your resume bullet points to better align with this specific role\'s requirements.' },
-                        { label: 'Letter', color: 'bg-teal-50 text-teal-700', desc: 'Generate a tailored cover letter that highlights your most relevant experiences for this position.' },
-                        { label: 'Interview Tips', color: 'bg-indigo-50 text-indigo-700', desc: 'Get AI-generated practice questions and strategic advice based on the job\'s core competencies.' },
-                        { label: 'SWOT Analysis', color: 'bg-blue-50 text-fm-blue', desc: 'Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job.' }
-                      ].map((tool, i) => (
-                        <div key={i} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                          <div className={`inline-block px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest mb-2 ${tool.color}`}>
-                            {tool.label}
+                    {/* Tool Suite Guide */}
+                    <div className="mb-12">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-fm-blue/10 rounded-xl flex items-center justify-center text-fm-blue">
+                            <Zap size={20} />
                           </div>
-                          <p className="text-[10px] text-slate-500 leading-relaxed">{tool.desc}</p>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900">AI Application Suite</h3>
+                            <p className="text-xs text-slate-500">Click a tool to learn how it optimizes your application.</p>
+                          </div>
                         </div>
-                      ))}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {[
+                          { id: 'match', label: 'Match', icon: <Zap size={14} />, color: 'bg-fm-blue/10 text-fm-blue', border: 'border-fm-blue/20', desc: 'Compare your resume against the job description to see your compatibility score and keyword gaps.' },
+                          { id: 'revise', label: 'Revise', icon: <PenTool size={14} />, color: 'bg-fm-violet/10 text-fm-violet', border: 'border-fm-violet/20', desc: 'Automatically optimize your resume bullet points to better align with this specific role\'s requirements.' },
+                          { id: 'letter', label: 'Letter', icon: <FileText size={14} />, color: 'bg-teal-50 text-teal-700', border: 'border-teal-200', desc: 'Generate a tailored cover letter that highlights your most relevant experiences for this position.' },
+                          { id: 'prep', label: 'Interview Tips', icon: <MessageSquare size={14} />, color: 'bg-indigo-50 text-indigo-700', border: 'border-indigo-200', desc: 'Get AI-generated practice questions and strategic advice based on the job\'s core competencies.' },
+                          { id: 'swot', label: 'SWOT Analysis', icon: <TrendingUp size={14} />, color: 'bg-blue-50 text-fm-blue', border: 'border-blue-100', desc: 'Analyze the Strengths, Weaknesses, Opportunities, and Threats of your profile relative to this job.' }
+                        ].map((tool, i) => (
+                          <button 
+                            key={i} 
+                            onClick={() => setActiveHelpTool(tool.id)}
+                            className={`p-4 bg-white rounded-2xl border ${tool.border} shadow-sm hover:shadow-md hover:scale-[1.02] transition-all text-left group`}
+                          >
+                            <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest mb-3 ${tool.color}`}>
+                              {tool.icon} {tool.label}
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 group-hover:text-slate-700">{tool.desc}</p>
+                            <div className="mt-3 text-[8px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-fm-blue flex items-center gap-1">
+                              Learn More <ArrowRight size={10} />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -3369,6 +3616,30 @@ export default function App() {
                 </motion.div>
               )}
 
+              {homeTab === 'national-careers' && (
+                <motion.div
+                  key="national-careers"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <NationalCareersView />
+                </motion.div>
+              )}
+
+              {homeTab === 'glossary' && (
+                <motion.div
+                  key="glossary"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <GlossaryView />
+                </motion.div>
+              )}
+
               {homeTab === 'scout' && (
                 <motion.div
                   key="scout"
@@ -3447,6 +3718,116 @@ export default function App() {
       <AnimatePresence>
         {activeSWOT && (
           <SWOTModal job={activeSWOT} onClose={() => setActiveSWOT(null)} />
+        )}
+
+        {activeHelpTool && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100"
+            >
+              <div className="p-10">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="w-16 h-16 bg-fm-blue/10 rounded-2xl flex items-center justify-center text-fm-blue">
+                    {activeHelpTool === 'match' && <Zap size={32} />}
+                    {activeHelpTool === 'revise' && <PenTool size={32} />}
+                    {activeHelpTool === 'letter' && <FileText size={32} />}
+                    {activeHelpTool === 'prep' && <MessageSquare size={32} />}
+                    {activeHelpTool === 'swot' && <TrendingUp size={32} />}
+                  </div>
+                  <button onClick={() => setActiveHelpTool(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                    <X size={24} className="text-slate-400" />
+                  </button>
+                </div>
+                
+                <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                  {activeHelpTool === 'match' && 'Resume Matcher'}
+                  {activeHelpTool === 'revise' && 'AI Resume Reviser'}
+                  {activeHelpTool === 'letter' && 'Cover Letter Drafter'}
+                  {activeHelpTool === 'prep' && 'Interview Prep'}
+                  {activeHelpTool === 'swot' && 'SWOT Analysis'}
+                </h2>
+                
+                <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                  {activeHelpTool === 'match' && 'Our AI analyzes your resume against the specific job description, identifying keyword gaps and calculating a compatibility score to help you understand your standing.'}
+                  {activeHelpTool === 'revise' && 'This tool automatically rewrites your resume bullet points to mirror the language and requirements of the job, making your experience more relevant to recruiters.'}
+                  {activeHelpTool === 'letter' && 'Generate a professional, tailored cover letter that connects your past achievements directly to the needs of the hiring manager for this specific role.'}
+                  {activeHelpTool === 'prep' && 'Prepare for the interview with AI-generated questions tailored to the role, along with strategic advice on how to highlight your strengths.'}
+                  {activeHelpTool === 'swot' && 'A strategic analysis of your profile relative to the job, highlighting your Strengths, Weaknesses, Opportunities, and potential Threats in the application process.'}
+                </p>
+                
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-fm-blue mb-3">How to use</h4>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    Simply find a job you like in the Career Discovery portal and click the corresponding button on the job card to launch the tool.
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => setActiveHelpTool(null)}
+                  className="w-full mt-10 py-4 bg-fm-blue text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-fm-blue/20"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {activeHelpTool && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100"
+            >
+              <div className="p-10">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="w-16 h-16 bg-fm-blue/10 rounded-2xl flex items-center justify-center text-fm-blue">
+                    {activeHelpTool === 'match' && <Zap size={32} />}
+                    {activeHelpTool === 'revise' && <PenTool size={32} />}
+                    {activeHelpTool === 'letter' && <FileText size={32} />}
+                    {activeHelpTool === 'prep' && <MessageSquare size={32} />}
+                    {activeHelpTool === 'swot' && <TrendingUp size={32} />}
+                  </div>
+                  <button onClick={() => setActiveHelpTool(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                    <X size={24} className="text-slate-400" />
+                  </button>
+                </div>
+                
+                <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                  {activeHelpTool === 'match' && 'Resume Matcher'}
+                  {activeHelpTool === 'revise' && 'AI Resume Reviser'}
+                  {activeHelpTool === 'letter' && 'Cover Letter Drafter'}
+                  {activeHelpTool === 'prep' && 'Interview Prep'}
+                  {activeHelpTool === 'swot' && 'SWOT Analysis'}
+                </h2>
+                
+                <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                  {activeHelpTool === 'match' && 'Our AI analyzes your resume against the specific job description, identifying keyword gaps and calculating a compatibility score to help you understand your standing.'}
+                  {activeHelpTool === 'revise' && 'This tool automatically rewrites your resume bullet points to mirror the language and requirements of the job, making your experience more relevant to recruiters.'}
+                  {activeHelpTool === 'letter' && 'Generate a professional, tailored cover letter that connects your past achievements directly to the needs of the hiring manager for this specific role.'}
+                  {activeHelpTool === 'prep' && 'Prepare for the interview with AI-generated questions tailored to the role, along with strategic advice on how to highlight your strengths.'}
+                  {activeHelpTool === 'swot' && 'A strategic analysis of your profile relative to the job, highlighting your Strengths, Weaknesses, Opportunities, and potential Threats in the application process.'}
+                </p>
+                
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-fm-blue mb-3">How to use</h4>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    Simply find a job you like in the Career Discovery portal and click the corresponding button on the job card to launch the tool.
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => setActiveHelpTool(null)}
+                  className="w-full mt-10 py-4 bg-fm-blue text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-fm-blue/20"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
