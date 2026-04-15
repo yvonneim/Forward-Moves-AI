@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { SYSTEM_INSTRUCTION } from "../constants/prompts";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -16,16 +17,15 @@ export const chatWithScout = async (messages: ScoutMessage[]): Promise<ScoutMess
     contents: [
       {
         role: "user",
-        parts: [{ text: `You are the "AI Career Scout" for Forward Moves. 
-        Your goal is to help job seekers navigate the modern job market using real-time information.
-        While we have a focus on AI integration, you cover ALL careers and industries.
-        Use Google Search to find current job trends, company news, and career advice across any field the user asks about.
-        Be professional, encouraging, and data-driven.
-        
-        User Query: ${lastMessage}` }]
+        parts: [{ text: `User Query: ${lastMessage}` }]
       }
     ],
     config: {
+      systemInstruction: SYSTEM_INSTRUCTION + `\n\nYou are the "AI Career Scout" for Forward Moves. 
+        Your goal is to help job seekers navigate the modern job market using real-time information.
+        While we have a focus on AI integration, you cover ALL careers and industries.
+        Use Google Search to find current job trends, company news, and career advice across any field the user asks about.
+        Be professional, encouraging, and data-driven.`,
       tools: [{ googleSearch: {} }],
     },
   });

@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Job, InterviewPrep, CoverLetter } from "../types";
+import { SYSTEM_INSTRUCTION } from "../constants/prompts";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -13,6 +14,7 @@ export const generateInterviewPrep = async (job: Job): Promise<InterviewPrep> =>
     
     Provide 5 likely interview questions, suggested answers, and why they are asking each question. Also include a summary of the company culture and 3 pieces of strategic advice for the interview.`,
     config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -50,6 +52,7 @@ export const getInterviewFeedback = async (question: string, answer: string, job
     
     Provide constructive feedback, a score from 0-100, and 3 specific suggestions for improvement.`,
     config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -79,6 +82,7 @@ export const generateCoverLetter = async (resumeText: string, job: Job): Promise
     
     The cover letter should be professional, highlight specific achievements from the resume that match the job requirements, and show genuine interest in the company.`,
     config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
