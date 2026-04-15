@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, Settings, RotateCcw } from 'lucide-react';
+import { Play, Pause, Volume2, Settings, RotateCcw, Loader2 } from 'lucide-react';
+import { generateSpeech } from '../services/ttsService';
 
 interface AudioPlayerProps {
   text: string;
@@ -8,11 +9,13 @@ interface AudioPlayerProps {
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   // Estimate duration based on word count (average 150 words per minute)
   useEffect(() => {
@@ -22,82 +25,156 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
 
   useEffect(() => {
     return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
       window.speechSynthesis.cancel();
     };
-  }, []);
+  }, [audioUrl]);
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds === Infinity) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePlayPause = () => {
+  const handlePlayPause = async () => {
     if (isPlaying) {
-      window.speechSynthesis.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      } else {
+        window.speechSynthesis.pause();
+      }
       setIsPlaying(false);
     } else {
-      if (window.speechSynthesis.paused) {
+      if (audioRef.current) {
+        audioRef.current.play().catch(err => console.error("Audio play failed:", err));
+        setIsPlaying(true);
+      } else if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
+        setIsPlaying(true);
       } else {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = playbackRate;
-        
-        utterance.onend = () => {
-          setIsPlaying(false);
-          setProgress(100);
-          setCurrentTime(duration);
-        };
-        
-        utterance.onboundary = (event) => {
-          if (event.name === 'word') {
-            const charIndex = event.charIndex;
-            const totalChars = text.length;
-            const newProgress = (charIndex / totalChars) * 100;
-            setProgress(newProgress);
-            setCurrentTime((charIndex / totalChars) * duration);
+        setIsLoading(true);
+        try {
+          // Add a longer timeout to the TTS generation to prevent premature fallback
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error("TTS generation timed out")), 25000)
+          );
+          
+          const base64Audio = await Promise.race([
+            generateSpeech(text),
+            timeoutPromise
+          ]);
+
+          const binaryString = window.atob(base64Audio);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
           }
-        };
-        
-        utteranceRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
+          const blob = new Blob([bytes], { type: 'audio/mp3' });
+          const url = URL.createObjectURL(blob);
+          setAudioUrl(url);
+
+          const audio = new Audio(url);
+          audio.playbackRate = playbackRate;
+          
+          audio.onloadedmetadata = () => {
+            setDuration(audio.duration);
+          };
+
+          audio.ontimeupdate = () => {
+            setCurrentTime(audio.currentTime);
+            setProgress((audio.currentTime / audio.duration) * 100);
+          };
+
+          audio.onended = () => {
+            setIsPlaying(false);
+            setProgress(0);
+            setCurrentTime(0);
+          };
+
+          audioRef.current = audio;
+          await audio.play();
+          setIsPlaying(true);
+        } catch (error) {
+          console.error("Gemini TTS failed or timed out, falling back to browser speech:", error);
+          
+          // Fallback to browser speech
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = playbackRate;
+          
+          // Try to find a more natural browser voice if available
+          const voices = window.speechSynthesis.getVoices();
+          const naturalVoice = voices.find(v => 
+            (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')) && 
+            v.lang.startsWith('en')
+          );
+          if (naturalVoice) {
+            utterance.voice = naturalVoice;
+          }
+          
+          utterance.onstart = () => {
+            setIsPlaying(true);
+            setIsLoading(false);
+          };
+
+          utterance.onend = () => {
+            setIsPlaying(false);
+            setProgress(0);
+            setCurrentTime(0);
+          };
+
+          utterance.onerror = (event) => {
+            console.error("SpeechSynthesis error:", event);
+            setIsPlaying(false);
+            setIsLoading(false);
+          };
+
+          utterance.onboundary = (event) => {
+            if (event.name === 'word') {
+              const charIndex = event.charIndex;
+              const totalChars = text.length;
+              setProgress((charIndex / totalChars) * 100);
+              setCurrentTime((charIndex / totalChars) * duration);
+            }
+          };
+
+          window.speechSynthesis.speak(utterance);
+          // Note: we don't set isLoading(false) here yet, we wait for onstart or catch
+        } finally {
+          // If we didn't start the fallback, or if it failed immediately, clear loading
+          setTimeout(() => {
+            if (!window.speechSynthesis.speaking && !isPlaying) {
+              setIsLoading(false);
+            }
+          }, 100);
+        }
       }
-      setIsPlaying(true);
     }
   };
 
   const handleReset = () => {
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-    setProgress(0);
-    setCurrentTime(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+      setProgress(0);
+      setCurrentTime(0);
+    }
   };
 
   const toggleRate = () => {
     const rates = [1, 1.25, 1.5, 2];
     const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
     setPlaybackRate(nextRate);
-    
-    // If playing, we need to restart to apply the new rate
-    if (isPlaying) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text.substring(Math.floor((progress / 100) * text.length)));
-      utterance.rate = nextRate;
-      utterance.onend = () => {
-        setIsPlaying(false);
-        setProgress(100);
-        setCurrentTime(duration);
-      };
-      utterance.onboundary = (event) => {
-        if (event.name === 'word') {
-          const charIndex = event.charIndex + Math.floor((progress / 100) * text.length);
-          const totalChars = text.length;
-          setProgress((charIndex / totalChars) * 100);
-          setCurrentTime((charIndex / totalChars) * duration);
-        }
-      };
-      window.speechSynthesis.speak(utterance);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextRate;
     }
   };
 
@@ -106,10 +183,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
       <div className="flex items-center gap-4 w-full md:w-auto">
         <button 
           onClick={handlePlayPause}
-          className="w-12 h-12 bg-fm-blue text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+          disabled={isLoading}
+          className="w-12 h-12 bg-fm-blue text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
-          {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
+          {isLoading ? (
+            <Loader2 size={24} className="animate-spin" />
+          ) : isPlaying ? (
+            <Pause size={24} fill="currentColor" />
+          ) : (
+            <Play size={24} fill="currentColor" className="ml-1" />
+          )}
         </button>
         
         <div className="text-sm font-mono font-medium text-slate-600 tabular-nums">
@@ -134,11 +218,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
           max="100" 
           value={progress}
           onChange={(e) => {
-            // Manual seeking is complex with SpeechSynthesis, so we'll just show the progress for now
-            // or we could implement seeking by restarting the utterance from a specific index
+            const newProgress = parseFloat(e.target.value);
+            if (audioRef.current) {
+              const newTime = (newProgress / 100) * audioRef.current.duration;
+              audioRef.current.currentTime = newTime;
+              setProgress(newProgress);
+              setCurrentTime(newTime);
+            }
           }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          disabled
         />
       </div>
 

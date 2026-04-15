@@ -3133,13 +3133,37 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-8 space-y-8">
         
         {view === 'resume-matcher' && matchingJob ? (
-          <ResumeMatcher job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          <div className="space-y-8">
+            <AudioPlayer 
+              title="Matcher Audio" 
+              text="Resume Matcher. We are comparing your resume against the job description to identify keyword gaps and calculate your compatibility score." 
+            />
+            <ResumeMatcher job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          </div>
         ) : view === 'resume-reviser' && matchingJob ? (
-          <ResumeReviser job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          <div className="space-y-8">
+            <AudioPlayer 
+              title="Reviser Audio" 
+              text="AI Resume Reviser. We are automatically rewriting your resume bullet points to better align with the specific requirements of this role." 
+            />
+            <ResumeReviser job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          </div>
         ) : view === 'interview-prep' && matchingJob ? (
-          <InterviewPrepView job={matchingJob} onBack={() => setView('home')} />
+          <div className="space-y-8">
+            <AudioPlayer 
+              title="Interview Audio" 
+              text="Interview Prep. Get ready for your interview with AI-generated questions and strategic advice tailored to this specific position." 
+            />
+            <InterviewPrepView job={matchingJob} onBack={() => setView('home')} />
+          </div>
         ) : view === 'cover-letter' && matchingJob ? (
-          <CoverLetterDrafter job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          <div className="space-y-8">
+            <AudioPlayer 
+              title="Cover Letter Audio" 
+              text="Cover Letter Drafter. We are generating a professional, tailored cover letter that connects your achievements directly to the needs of the hiring manager." 
+            />
+            <CoverLetterDrafter job={matchingJob} onBack={() => setView('home')} initialResumeText={resumeText} />
+          </div>
         ) : view === 'home' ? (
           <>
             {homeTab === 'start' && (
@@ -3615,6 +3639,10 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                   className="space-y-20"
                 >
+                  <AudioPlayer 
+                    title="Insights Audio" 
+                    text="Career Insights. Analyze your skill gaps and track market trends to stay competitive in the AI-driven workforce. We provide strategic advice based on real-time data." 
+                  />
                   <SkillGapAnalyzer resumeText={resumeText} jobs={jobs} />
                   <MarketTrendTracker jobs={jobs} />
                   <TrustComplianceFramework />
@@ -3691,6 +3719,10 @@ export default function App() {
         </>
         ) : (
           <div className="space-y-6">
+            <AudioPlayer 
+              title="Comparison Audio" 
+              text="Job Comparison. Compare your selected roles side-by-side to evaluate salary, location, and required skills. This helps you make an informed decision about your next career move." 
+            />
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold text-slate-800 tracking-tighter">Job Comparison</h2>
               <button onClick={() => setView('home')} className="text-slate-600 hover:text-fm-blue text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all">
