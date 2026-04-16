@@ -5,13 +5,13 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 export const generateSpeech = async (text: string): Promise<string> => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Speak this naturally and with a warm, professional human tone: ${text}` }] }],
+      model: "gemini-3.1-flash-tts-preview",
+      contents: [{ parts: [{ text }] }], // Send clean text directly
       config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Puck' }, // 'Puck' is often preferred for natural human-like quality
+            prebuiltVoiceConfig: { voiceName: 'Kore' }, // 'Kore' is a very stable and natural high-quality voice
           },
         },
       },

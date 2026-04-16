@@ -76,7 +76,34 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
           for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
-          const blob = new Blob([bytes], { type: 'audio/mp3' });
+          
+          // Gemini TTS returns raw PCM (16-bit, 24kHz, Mono). 
+          // We need to wrap it in a WAV header so the browser's Audio element can play it.
+          const createWavHeader = (dataLength: number) => {
+            const buffer = new ArrayBuffer(44);
+            const view = new DataView(buffer);
+            view.setUint32(0, 0x52494646, false); // "RIFF"
+            view.setUint32(4, 36 + dataLength, true);
+            view.setUint32(8, 0x57415645, false); // "WAVE"
+            view.setUint32(12, 0x666d7420, false); // "fmt "
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, 1, true); // Mono
+            view.setUint32(24, 24000, true); // 24kHz
+            view.setUint32(28, 24000 * 2, true); // Byte rate
+            view.setUint16(32, 2, true); // Block align
+            view.setUint16(34, 16, true); // Bits per sample
+            view.setUint32(36, 0x64617461, false); // "data"
+            view.setUint32(40, dataLength, true);
+            return new Uint8Array(buffer);
+          };
+
+          const wavHeader = createWavHeader(bytes.length);
+          const wavBytes = new Uint8Array(wavHeader.length + bytes.length);
+          wavBytes.set(wavHeader, 0);
+          wavBytes.set(bytes, wavHeader.length);
+
+          const blob = new Blob([wavBytes], { type: 'audio/wav' });
           const url = URL.createObjectURL(blob);
           setAudioUrl(url);
 
@@ -100,6 +127,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
 
           audioRef.current = audio;
           await audio.play();
+          console.log("Playing high-quality Gemini TTS audio (WAV wrapped)");
           setIsPlaying(true);
         } catch (error) {
           console.error("Gemini TTS failed or timed out, falling back to browser speech:", error);
@@ -111,12 +139,18 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ text, title }) => {
           
           // Try to find a more natural browser voice if available
           const voices = window.speechSynthesis.getVoices();
+          // Sort voices to prefer "Google" or "Natural" or "Premium" voices
           const naturalVoice = voices.find(v => 
-            (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')) && 
-            v.lang.startsWith('en')
-          );
+            v.lang.startsWith('en') && 
+            (v.name.toLowerCase().includes('google') || 
+             v.name.toLowerCase().includes('natural') || 
+             v.name.toLowerCase().includes('premium') ||
+             v.name.toLowerCase().includes('enhanced'))
+          ) || voices.find(v => v.lang.startsWith('en'));
+
           if (naturalVoice) {
             utterance.voice = naturalVoice;
+            console.log("Using fallback voice:", naturalVoice.name);
           }
           
           utterance.onstart = () => {
